@@ -1,0 +1,593 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="iOS,protocol," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="这其实是两年前的一个产品，使用场景类似于基于苹果推出的iBeacon实现室内定位，利用一个小巧的超声波硬件设备，周期性的广播信标信号，手机直接使用麦克风接收这个音频信号并且解码，得到信标信号中的有效数据，最后再根据这个数据进行室内定位的算法逻辑处理。声波通信部分，是技术基础，开发难度比较大，在当时的情况下，对于产品来说，是一个技术壁垒。现在已经过去两年时间了，而且其实出于商业层面的原因，团队也早已">
+<meta property="og:type" content="article">
+<meta property="og:title" content="手机超声波通信">
+<meta property="og:url" content="http://fengjian0106.github.io/2014/12/09/Ultrasonic-Communication/index.html">
+<meta property="og:site_name" content="FengJian's Blog">
+<meta property="og:description" content="这其实是两年前的一个产品，使用场景类似于基于苹果推出的iBeacon实现室内定位，利用一个小巧的超声波硬件设备，周期性的广播信标信号，手机直接使用麦克风接收这个音频信号并且解码，得到信标信号中的有效数据，最后再根据这个数据进行室内定位的算法逻辑处理。声波通信部分，是技术基础，开发难度比较大，在当时的情况下，对于产品来说，是一个技术壁垒。现在已经过去两年时间了，而且其实出于商业层面的原因，团队也早已">
+<meta property="og:updated_time" content="2016-04-10T11:44:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="手机超声波通信">
+<meta name="twitter:description" content="这其实是两年前的一个产品，使用场景类似于基于苹果推出的iBeacon实现室内定位，利用一个小巧的超声波硬件设备，周期性的广播信标信号，手机直接使用麦克风接收这个音频信号并且解码，得到信标信号中的有效数据，最后再根据这个数据进行室内定位的算法逻辑处理。声波通信部分，是技术基础，开发难度比较大，在当时的情况下，对于产品来说，是一个技术壁垒。现在已经过去两年时间了，而且其实出于商业层面的原因，团队也早已">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 手机超声波通信 | FengJian's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">FengJian's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">iOS Golang node.js Developer</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                手机超声波通信
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2014-12-09T11:30:11+08:00" content="2014-12-09">
+              2014-12-09
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2014/12/09/Ultrasonic-Communication/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/12/09/Ultrasonic-Communication/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这其实是两年前的一个产品，使用场景类似于基于苹果推出的<code>iBeacon</code>实现室内定位，利用一个小巧的超声波硬件设备，周期性的广播信标信号，手机直接使用麦克风接收这个音频信号并且解码，得到信标信号中的有效数据，最后再根据这个数据进行室内定位的算法逻辑处理。声波通信部分，是技术基础，开发难度比较大，在当时的情况下，对于产品来说，是一个技术壁垒。现在已经过去两年时间了，而且其实出于商业层面的原因，团队也早已放弃这个产品转战其他方向了，所以我还是准备把其中的一些技术细节记录下来。</p>
+<h3 id="基于使用场景而提出的一些技术参数指标"><a href="#基于使用场景而提出的一些技术参数指标" class="headerlink" title="基于使用场景而提出的一些技术参数指标"></a>基于使用场景而提出的一些技术参数指标</h3><ol>
+<li>只能使用18kHz~21kHz这个范围内的音频信号(人耳要尽量听不见这个声音，手机要能够接收到这个声音，所以只能限制在这个频率范围内)</li>
+<li>通信距离最远要达到10米 </li>
+<li>还有一些是硬件设备的性能要求，和通信协议无关，不是这次的讨论重点，可以忽略</li>
+</ol>
+<h3 id="关键技术点"><a href="#关键技术点" class="headerlink" title="关键技术点"></a>关键技术点</h3><ol>
+<li>为了减小数据处理过程中的延迟现象，采取的是实时的进行音频数据采集和数据处理，而不是像某些类似SDK中使用的技术那样，先录音得到一小段音频文件，然后再进行数据处理。具体到iOS平台上，就是使用audio unit框架来搭建PCM音频数据的采集管道，在管道的最后一个节点上，对得到的PCM数据再进行进一步的处理。</li>
+<li>仍然是为了降低延迟，使用手机的DSP硬件来进行快速傅里叶变换，具体到iOS上，就是用了Accelerate.framework框架中的相关函数。</li>
+<li>为了提高数据传输和解码的成功率，在2FSK的基础上，做了一些调整(magic trick)。</li>
+</ol>
+<p>前两点没有太多可说的，对应的开发文档中有很详尽的描述，只不过稍微偏底层一些，只要静下心来老老实实的啃啃文档，还是可以搞定的。第3点中用到的技巧，可能不太常见，我会详细解释一下。</p>
+<p>基于标准的2FSK，假如约定用18kHz的音频信号表示二进制的0，用19kHz的音频信号表示二进制的1，同时约定每一个bit持续的发送时间为50ms，假设要发送一个8bit的二进制数据0b11001010(忽略同步和校验部分的bit)，对于发送端来说，代码逻辑其实比较简单，只需要让特定频率的引号信号发送特定的时间就行了。但是对于接收端来说，代码就很困难了，虽然用的是2FSK，但是并没有专用的硬件来完成调制解调过程，所以要完全用代码来模拟整个过程，这个里面就涉及到了傅里叶变换、滤波等大量的数字信号处理里面的内容，这些处理完后，才会真正的进入到通信协议栈里面处理二进制的0和1。</p>
+<p>如果按照标准的2FSK方式，接收端的代码必须用定时器记录0或1(18kHz或19kHz)持续的时间，然后用这个时间值和50ms做比较，才能判断出这一部分音频片段对应了多少个连续的0或1。而且这仅仅是理论上对解码算法的描述，实际情况中，发送端维持的每个bit位的持续时间是50ms，进入空气中后，会和其他的各种各样的音频信号混杂在一起，然后才进入接收端进行变换和滤波等操作，这个时候，是很难保证每个bit位仍然能够维持在50ms的(即便有50ms，代码仍然会很难编写)，正式因为这些原因，成功解码数据的概率并不高。为了改善这种情况，对2FSK做了一些调整，这里借鉴了数字电路里面的一些概念和技术。在数电的串行接口电路中，使用高低电平来表示二进制的1和0，根据传输比特率的约定，每个电平会持续特定的时间，这类似于我们的音频系统中约定的每个bit持续发送50ms，这通常称为电平检测(根据电平值持续的时间进行检测)，还有另外一种称为边缘检测的技术，它不依赖于每个电平值持续的时间，而是依赖于电平值的变化事件，比如电平从高变为低(从1变为0)。这里就是使用了边缘检测这种方式来处理音频信号，接收端需要关注的，是音频信号频率值的变化，而不是每个频率值持续的时间。为了实现这种方式，还需要对之前的约定做一些调整，调整为18kHz和19kHz的音频信号都可以表示二进制的0，20kHz和21kHz的音频信号都可以表示二进制的1，如果是为了表示两个连续的0，那么就应该是18kHz的音频信号持续50ms，然后变成19kHz的音频信号持续50ms(或者先发送19kHz的，再发送18kHz的)，对于连续的1，也采用类似的策略。举个例子，对于二进制数据0b11101000，转换成频率值后，可能就会是这样的一组值 [20kHz，21kHz，20kHz，18kHz，21kHz，18kHz，19kHz，18kHz]，因为每一个bit对应的频率值都会发生变化，那么接收端就可以忽略每个bit持续的时间，只需要检测出每一次频率值发生变化就行了，每一次变化后得到的数值，就可以对应到当前的bit位的二进制值。用了这种调制解调的思路后，接收端的代码，写起来就很容易了:]</p>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag">#iOS</a>
+          
+            <a href="/tags/protocol/" rel="tag">#protocol</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/10/08/iOS-Cache-Access-And-Custom-Http-Proxy/" rel="next" title="iOS cache系统和自定义http代理">
+                <i class="fa fa-chevron-left"></i> iOS cache系统和自定义http代理
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/" rel="prev" title="如何实现Minuum和Fleksy输入法中的智能纠错功能">
+                如何实现Minuum和Fleksy输入法中的智能纠错功能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2014/12/09/Ultrasonic-Communication/"
+           data-title="手机超声波通信" data-url="http://fengjian0106.github.io/2014/12/09/Ultrasonic-Communication/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="FengJian" />
+          <p class="site-author-name" itemprop="name">FengJian</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        <div class="links-of-blogroll motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基于使用场景而提出的一些技术参数指标"><span class="nav-number">1.</span> <span class="nav-text">基于使用场景而提出的一些技术参数指标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关键技术点"><span class="nav-number">2.</span> <span class="nav-text">关键技术点</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">FengJian</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"fengjian0106"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>
