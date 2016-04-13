@@ -64,7 +64,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Swift,CSP,Concurrency," />
 
 
 
@@ -80,15 +80,22 @@
 
 
 
-<meta name="description">
-<meta property="og:type" content="website">
-<meta property="og:title" content="FengJian's Blog">
-<meta property="og:url" content="http://fengjian0106.github.io/index.html">
+<meta name="description" content="前言这篇文章的主要内容，是从 Go Concurrency Patterns 翻译过来的。
+原文是介绍 Golang 里面的 CSP 并发模型(Communicating Sequential Processes)，这里则是使用一个基于 Swift3.0 的库 Venice 编写的代码。
+这篇文章的主要目的，并不是鼓励大家立刻就用 Swift 进行后端开发(至少不是目前这个阶段)，但是，对于想尝试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSP Concurrency Patterns In Swift">
+<meta property="og:url" content="http://fengjian0106.github.io/2016/04/10/CSP-Concurrency-Patterns-In-Swift/index.html">
 <meta property="og:site_name" content="FengJian's Blog">
-<meta property="og:description">
+<meta property="og:description" content="前言这篇文章的主要内容，是从 Go Concurrency Patterns 翻译过来的。
+原文是介绍 Golang 里面的 CSP 并发模型(Communicating Sequential Processes)，这里则是使用一个基于 Swift3.0 的库 Venice 编写的代码。
+这篇文章的主要目的，并不是鼓励大家立刻就用 Swift 进行后端开发(至少不是目前这个阶段)，但是，对于想尝试">
+<meta property="og:updated_time" content="2016-04-13T05:50:08.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="FengJian's Blog">
-<meta name="twitter:description">
+<meta name="twitter:title" content="CSP Concurrency Patterns In Swift">
+<meta name="twitter:description" content="前言这篇文章的主要内容，是从 Go Concurrency Patterns 翻译过来的。
+原文是介绍 Golang 里面的 CSP 并发模型(Communicating Sequential Processes)，这里则是使用一个基于 Swift3.0 的库 Venice 编写的代码。
+这篇文章的主要目的，并不是鼓励大家立刻就用 Swift 进行后端开发(至少不是目前这个阶段)，但是，对于想尝试">
 
 
 
@@ -106,7 +113,7 @@
   };
 </script>
 
-  <title> FengJian's Blog </title>
+  <title> CSP Concurrency Patterns In Swift | FengJian's Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -127,9 +134,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -206,9 +211,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -228,10 +233,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/04/10/CSP-Concurrency-Patterns-In-Swift/" itemprop="url">
-                  CSP Concurrency Patterns In Swift
-                </a>
+                CSP Concurrency Patterns In Swift
               
             
           </h1>
@@ -278,9 +280,7 @@
       
 
       
-        
-          
-            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>这篇文章的主要内容，是从 <a href="https://talks.golang.org/2012/concurrency.slide" target="_blank" rel="external">Go Concurrency Patterns</a> 翻译过来的。</p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>这篇文章的主要内容，是从 <a href="https://talks.golang.org/2012/concurrency.slide" target="_blank" rel="external">Go Concurrency Patterns</a> 翻译过来的。</p>
 <p>原文是介绍 <a href="http://golang.info/" target="_blank" rel="external">Golang</a> 里面的 <a href="https://en.wikipedia.org/wiki/Communicating_sequential_processes" target="_blank" rel="external">CSP</a> 并发模型(Communicating Sequential Processes)，这里则是使用一个基于 Swift3.0 的库 <a href="https://github.com/VeniceX/Venice" target="_blank" rel="external">Venice</a> 编写的代码。</p>
 <p>这篇文章的主要目的，并不是鼓励大家立刻就用 Swift 进行后端开发(至少不是目前这个阶段)，但是，对于想尝试全栈开发的 iOS 工程师来说，则可以通过这篇文章入门学习 CSP 这种并发编程模型。</p>
 <p><em>2016/04/08 update: 为了成功运行本文中的代码，需要安装 <a href="https://swift.org/builds/development/xcode/swift-DEVELOPMENT-SNAPSHOT-2016-03-24-a/swift-DEVELOPMENT-SNAPSHOT-2016-03-24-a-osx.pkg" target="_blank" rel="external">https://swift.org/builds/development/xcode/swift-DEVELOPMENT-SNAPSHOT-2016-03-24-a/swift-DEVELOPMENT-SNAPSHOT-2016-03-24-a-osx.pkg</a> 这个版本的 swift。</em></p>
@@ -447,725 +447,61 @@
 <p>正确的工具做正确的事情。</p>
 <h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>这篇文章里面的 demo code 位于 <a href="https://github.com/fengjian0106/CSP-tutorial.git" target="_blank" rel="external">https://github.com/fengjian0106/CSP-tutorial.git</a></p>
 
-          
-        
       
     </div>
     
     <div>
       
+        
+      
     </div>
 
     <div>
+      
+        
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/" itemprop="url">
-                  如何实现Minuum和Fleksy输入法中的智能纠错功能
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2015-02-11T10:56:30+08:00" content="2015-02-11">
-              2015-02-11
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/Swift/" rel="tag">#Swift</a>
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
+            <a href="/tags/CSP/" rel="tag">#CSP</a>
           
-
-          
-
-          
-          
-
+            <a href="/tags/Concurrency/" rel="tag">#Concurrency</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p>输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 <a href="http://minuum.com/" target="_blank" rel="external">Minuum</a> 和 <a href="http://fleksy.com/" target="_blank" rel="external">Fleksy</a> 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。</p>
-<ol>
-<li>基于贝叶斯推断的，主要线索是 <a href="http://norvig.com/spell-correct.html" target="_blank" rel="external">http://norvig.com/spell-correct.html</a></li>
-<li>基于Levenshtein自动机的，主要线索是 <a href="http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata" target="_blank" rel="external">http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata</a></li>
-<li>一种基于预处理词库的改进算法，主要线索是 <a href="http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/" target="_blank" rel="external">http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/</a></li>
-<li>使用机器学习中的kNN算法，主要线索是 <a href="http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/" target="_blank" rel="external">http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/</a> 和 <a href="http://www.zhihu.com/question/27567987" target="_blank" rel="external">http://www.zhihu.com/question/27567987</a></li>
-</ol>
-<p>前三个方案，都是用传统的算法思路，基于<a href="http://en.wikipedia.org/wiki/Levenshtein_distance" target="_blank" rel="external">编辑距离</a>来实现模糊匹配，但是在手机上无法满足输入法的性能需求，尤其是查询速度这一点，而且也无法做到和Minuum或Fleksy类似的纠错效果。最终的第4个方案，则是彻底更换了思路，直接用机器学习中的 <a href="http://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm" target="_blank" rel="external">kNN</a> 算法，把字符串映射到更抽象的几何空间中，也就是所谓的特征向量，进行纯粹的数学计算。学习和研究的过程中，是直接用Python做的代码原型验证，放到github上了，有兴趣的朋友可以看看 <a href="https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching" target="_blank" rel="external">https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching</a></p>
-
-          
-        
-      
-    </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
+              <a href="/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/" rel="next" title="如何实现Minuum和Fleksy输入法中的智能纠错功能">
+                <i class="fa fa-chevron-left"></i> 如何实现Minuum和Fleksy输入法中的智能纠错功能
+              </a>
             
-              
-                
-                <a class="post-title-link" href="/2014/12/09/Ultrasonic-Communication/" itemprop="url">
-                  手机超声波通信
-                </a>
-              
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
             
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2014-12-09T11:30:11+08:00" content="2014-12-09">
-              2014-12-09
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2014/12/09/Ultrasonic-Communication/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/12/09/Ultrasonic-Communication/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p>这其实是两年前的一个产品，使用场景类似于基于苹果推出的<code>iBeacon</code>实现室内定位，利用一个小巧的超声波硬件设备，周期性的广播信标信号，手机直接使用麦克风接收这个音频信号并且解码，得到信标信号中的有效数据，最后再根据这个数据进行室内定位的算法逻辑处理。声波通信部分，是技术基础，开发难度比较大，在当时的情况下，对于产品来说，是一个技术壁垒。现在已经过去两年时间了，而且其实出于商业层面的原因，团队也早已放弃这个产品转战其他方向了，所以我还是准备把其中的一些技术细节记录下来。</p>
-<h3 id="基于使用场景而提出的一些技术参数指标"><a href="#基于使用场景而提出的一些技术参数指标" class="headerlink" title="基于使用场景而提出的一些技术参数指标"></a>基于使用场景而提出的一些技术参数指标</h3><ol>
-<li>只能使用18kHz~21kHz这个范围内的音频信号(人耳要尽量听不见这个声音，手机要能够接收到这个声音，所以只能限制在这个频率范围内)</li>
-<li>通信距离最远要达到10米 </li>
-<li>还有一些是硬件设备的性能要求，和通信协议无关，不是这次的讨论重点，可以忽略</li>
-</ol>
-<h3 id="关键技术点"><a href="#关键技术点" class="headerlink" title="关键技术点"></a>关键技术点</h3><ol>
-<li>为了减小数据处理过程中的延迟现象，采取的是实时的进行音频数据采集和数据处理，而不是像某些类似SDK中使用的技术那样，先录音得到一小段音频文件，然后再进行数据处理。具体到iOS平台上，就是使用audio unit框架来搭建PCM音频数据的采集管道，在管道的最后一个节点上，对得到的PCM数据再进行进一步的处理。</li>
-<li>仍然是为了降低延迟，使用手机的DSP硬件来进行快速傅里叶变换，具体到iOS上，就是用了Accelerate.framework框架中的相关函数。</li>
-<li>为了提高数据传输和解码的成功率，在2FSK的基础上，做了一些调整(magic trick)。</li>
-</ol>
-<p>前两点没有太多可说的，对应的开发文档中有很详尽的描述，只不过稍微偏底层一些，只要静下心来老老实实的啃啃文档，还是可以搞定的。第3点中用到的技巧，可能不太常见，我会详细解释一下。</p>
-<p>基于标准的2FSK，假如约定用18kHz的音频信号表示二进制的0，用19kHz的音频信号表示二进制的1，同时约定每一个bit持续的发送时间为50ms，假设要发送一个8bit的二进制数据0b11001010(忽略同步和校验部分的bit)，对于发送端来说，代码逻辑其实比较简单，只需要让特定频率的引号信号发送特定的时间就行了。但是对于接收端来说，代码就很困难了，虽然用的是2FSK，但是并没有专用的硬件来完成调制解调过程，所以要完全用代码来模拟整个过程，这个里面就涉及到了傅里叶变换、滤波等大量的数字信号处理里面的内容，这些处理完后，才会真正的进入到通信协议栈里面处理二进制的0和1。</p>
-<p>如果按照标准的2FSK方式，接收端的代码必须用定时器记录0或1(18kHz或19kHz)持续的时间，然后用这个时间值和50ms做比较，才能判断出这一部分音频片段对应了多少个连续的0或1。而且这仅仅是理论上对解码算法的描述，实际情况中，发送端维持的每个bit位的持续时间是50ms，进入空气中后，会和其他的各种各样的音频信号混杂在一起，然后才进入接收端进行变换和滤波等操作，这个时候，是很难保证每个bit位仍然能够维持在50ms的(即便有50ms，代码仍然会很难编写)，正式因为这些原因，成功解码数据的概率并不高。为了改善这种情况，对2FSK做了一些调整，这里借鉴了数字电路里面的一些概念和技术。在数电的串行接口电路中，使用高低电平来表示二进制的1和0，根据传输比特率的约定，每个电平会持续特定的时间，这类似于我们的音频系统中约定的每个bit持续发送50ms，这通常称为电平检测(根据电平值持续的时间进行检测)，还有另外一种称为边缘检测的技术，它不依赖于每个电平值持续的时间，而是依赖于电平值的变化事件，比如电平从高变为低(从1变为0)。这里就是使用了边缘检测这种方式来处理音频信号，接收端需要关注的，是音频信号频率值的变化，而不是每个频率值持续的时间。为了实现这种方式，还需要对之前的约定做一些调整，调整为18kHz和19kHz的音频信号都可以表示二进制的0，20kHz和21kHz的音频信号都可以表示二进制的1，如果是为了表示两个连续的0，那么就应该是18kHz的音频信号持续50ms，然后变成19kHz的音频信号持续50ms(或者先发送19kHz的，再发送18kHz的)，对于连续的1，也采用类似的策略。举个例子，对于二进制数据0b11101000，转换成频率值后，可能就会是这样的一组值 [20kHz，21kHz，20kHz，18kHz，21kHz，18kHz，19kHz，18kHz]，因为每一个bit对应的频率值都会发生变化，那么接收端就可以忽略每个bit持续的时间，只需要检测出每一次频率值发生变化就行了，每一次变化后得到的数值，就可以对应到当前的bit位的二进制值。用了这种调制解调的思路后，接收端的代码，写起来就很容易了:]</p>
-
-          
-        
-      
-    </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-      
 
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2014/10/08/iOS-Cache-Access-And-Custom-Http-Proxy/" itemprop="url">
-                  iOS cache系统和自定义http代理
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2014-10-08T17:11:38+08:00" content="2014-10-08">
-              2014-10-08
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2014/10/08/iOS-Cache-Access-And-Custom-Http-Proxy/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/10/08/iOS-Cache-Access-And-Custom-Http-Proxy/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>面试的时候，我喜欢问一些关于iOS http cache的问题，遇见不少开发者，第一反应都是自己编码实现整个cache存取流程，思路是没有问题的，但是这并不是我想要的答案。对于大部分使用场景，iOS自带的cache系统，就已经足够了，官方文档里也描述的很清楚，可以直接看 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Concepts/CachePolicies.html" target="_blank" rel="external">Understanding Cache Access</a>。</p>
-<h3 id="流媒体播放的缓存需求"><a href="#流媒体播放的缓存需求" class="headerlink" title="流媒体播放的缓存需求"></a>流媒体播放的缓存需求</h3><p>在做一个音乐播放器app的过程中，有一个需求是可以边播放边缓存，并且不能浪费流量(不能播放时有一次http下载，离线缓存时又有另一次http下载)。</p>
-<h3 id="技术方案"><a href="#技术方案" class="headerlink" title="技术方案"></a>技术方案</h3><p>查了一大堆文档，做了很多原型代码，最终还是发现 <code>AVQueuePlayer</code> 并不是基于 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/URLLoadingSystem.html" target="_blank" rel="external">URL Loading System</a> 实现的，所以不可能直接使用其中的cache系统，只能想其他的办法，比如:</p>
-<ol>
-<li>使用 <a href="https://developer.apple.com/library/ios/documentation/Networking/Conceptual/CFNetwork/Introduction/Introduction.html" target="_blank" rel="external">CFNetwork</a>、<a href="https://developer.apple.com/library/ios/documentation/MusicAudio/Reference/AudioStreamReference/index.html" target="_blank" rel="external">Audio File Stream Services</a> 以及 <a href="https://developer.apple.com/library/ios/documentation/MusicAudio/Conceptual/AudioQueueProgrammingGuide/Introduction/Introduction.html" target="_blank" rel="external">Audio Queue Services</a> 分别实现http下载、多媒体解码和播放过程，因为所有的流程都是自己控制，自然也就可以实现边播边存的效果。  </li>
-<li>使用 <code>ffmpeg</code> 第三方多媒体框架来实现。  </li>
-<li>仍然使用iOS自带的 <code>AVQueuePlayer</code> 进行http流媒体播放，但是在app内运行一个支持cache的 <code>http proxy</code>，让 <code>AVQueuePlayer</code> 通过这个 proxy 请求多媒体文件。</li>
-</ol>
-<h3 id="方案对比"><a href="#方案对比" class="headerlink" title="方案对比"></a>方案对比</h3><p>第一种方案是比较容易想到的，但是其实实现的难度比较大，三个模块都要使用偏底层的接口，学习成本很高。第二种方案其实也是学习成本很高，而且只能使用 <code>ffmpeg</code> 的软解码器，功耗也会很大。前两个方案还有一个共同的问题，就是需要自己考虑如何和iOS系统做整合，比如如何优雅的实现后台播放功能等等。综合考虑后，还是选择了第三种方案，虽然也有一定的学习成本，而且需要修改标准的 <code>http proxy</code> 协议，但是大部分模块都是用iOS的SDK实现的，和操作系统贴合的最紧密。</p>
-<h3 id="实现-http-proxy"><a href="#实现-http-proxy" class="headerlink" title="实现 http proxy"></a>实现 http proxy</h3><p>自己完整的实现一个 <code>http proxy</code>，也是一件很复杂的事情，所以还是偏向于找开源方案，对比了几个开源方案后，最终选择在 <a href="http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/" target="_blank" rel="external">Polipo</a> 的基础上进行修改。</p>
-<p>有一个技术细节需要说明一下，当使用浏览器、不使用代理的时候，通过抓包可以看到浏览器发出的http请求如下(忽略了无关内容):  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET / HTTP/1.1</span><br><span class="line">Host: www.example.com</span><br><span class="line">Connection: keep-alive</span><br></pre></td></tr></table></figure>
-<p>当使用浏览器并且使用代理的时候，通过抓包可以看到浏览器发出的http请求如下(忽略了无关内容):</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET http://www.example.com/ HTTP/1.1</span><br><span class="line">Host: www.example.com</span><br><span class="line">Proxy-Connection: keep-alive</span><br></pre></td></tr></table></figure>
-<p>最重要的一个区别就是 <code>GET</code> 请求后面的路径信息，前者是相对路径 <code>/</code>，而后者是绝对路径 <code>http://www.example.com/</code>。因为浏览器本身支持设置代理，所以浏览器会拼接合适的路径信息并且发送。但是iOS的 <code>AVQueuePlayer</code> 并不支持 <code>http proxy</code> 功能，无法和标准的代理服务器协同工作，所以只能同时在 <code>AVQueuePlayer</code> 和 <a href="http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/" target="_blank" rel="external">Polipo</a> 上做一些小的修改。</p>
-<p>使用 <code>AVQueuePlayer</code> 的时候，需要做一些 <code>magic trick</code>，关键代码如下:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">httpProxyUrl = [NSURL URLWithString:[NSString stringWithFormat:@&quot;http://127.0.0.1:%d/http://%@/music_new/%@&quot;, httpProxyPort, kKYMediaServiceManagerRemoteServerIpAndPort, mediaInfo.fileName]];</span><br></pre></td></tr></table></figure>
-<p>可以这样来理解这段代码，假设app内的 <code>http proxy</code> 的地址为 <code>127.0.0.1:9258</code>，实际的多媒体文件的地址为 <code>http://media.test.com/xxx.mp3</code>，那么 <code>AVQueuePlayer</code> 请求的最终地址就应该是:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://127.0.0.1:9258/http://media.test.com/xxx.mp3</span><br></pre></td></tr></table></figure>
-<p>在 <a href="http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/" target="_blank" rel="external">Polipo</a> 中，解析得到的最终目的服务器的地址(相对路径)是 <code>/http://media.test.com/xxx.mp3</code>，需要稍微修改一下源代码，去掉最左侧的 <code>/</code> 字符。具体就是在 <code>client.c</code> 文件的 <code>httpClientHandlerHeaders</code> 函数中添加一小段代码，也就是 <code>#ifdef POLIPO_KUYQI_VERSION</code> 和 <code>#endif</code> 之间的那一段:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line">int</span><br><span class="line">httpClientHandlerHeaders(FdEventHandlerPtr event, StreamRequestPtr srequest,</span><br><span class="line">                         HTTPConnectionPtr connection)</span><br><span class="line">&#123;</span><br><span class="line">    HTTPRequestPtr request;</span><br><span class="line">    int rc;</span><br><span class="line">    int method, version;</span><br><span class="line">    AtomPtr url = NULL;</span><br><span class="line">    int start;</span><br><span class="line">    int code;</span><br><span class="line">    AtomPtr message;</span><br><span class="line"></span><br><span class="line">    start = 0;</span><br><span class="line">    /* Work around clients working around NCSA lossage. */</span><br><span class="line">    if(connection-&gt;reqbuf[0] == &apos;\n&apos;)</span><br><span class="line">        start = 1;</span><br><span class="line">    else if(connection-&gt;reqbuf[0] == &apos;\r&apos; &amp;&amp; connection-&gt;reqbuf[1] == &apos;\n&apos;)</span><br><span class="line">        start = 2;</span><br><span class="line"></span><br><span class="line">    httpSetTimeout(connection, -1);</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">#ifdef POLIPO_KUYQI_VERSION</span><br><span class="line">    char *pch;</span><br><span class="line">    pch = strstr (connection-&gt;reqbuf, &quot;/http://&quot;);//TODO: if the client use url encoding??</span><br><span class="line">    if (pch == NULL) &#123;</span><br><span class="line">        //fprintf(stderr, &quot;###########this is normal http request\r\n&quot;);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        //remove the first &apos;/&apos;</span><br><span class="line">        pch = strstr (connection-&gt;reqbuf, &quot;/&quot;);</span><br><span class="line">        pch[0] = &apos; &apos;;</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    rc = httpParseClientFirstLine(connection-&gt;reqbuf, start,</span><br><span class="line">                                  &amp;method, &amp;url, &amp;version);</span><br><span class="line">    if(rc &lt;= 0) &#123;</span><br><span class="line">        do_log(L_ERROR, &quot;Couldn&apos;t parse client&apos;s request line\n&quot;);</span><br><span class="line">        code = 400;</span><br><span class="line">        message =  internAtom(&quot;Error in request line&quot;);</span><br><span class="line">        goto fail;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    do_log(D_CLIENT_REQ, &quot;Client request: &quot;);</span><br><span class="line">    do_log_n(D_CLIENT_REQ, connection-&gt;reqbuf, rc - 1);</span><br><span class="line">    do_log(D_CLIENT_REQ, &quot;\n&quot;);</span><br><span class="line"></span><br><span class="line">    if(version != HTTP_10 &amp;&amp; version != HTTP_11) &#123;</span><br><span class="line">        do_log(L_ERROR, &quot;Unknown client HTTP version\n&quot;);</span><br><span class="line">        code = 400;</span><br><span class="line">        message = internAtom(&quot;Error in first request line&quot;);</span><br><span class="line">        goto fail;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(method == METHOD_UNKNOWN) &#123;</span><br><span class="line">        code = 501;</span><br><span class="line">        message =  internAtom(&quot;Method not implemented&quot;);</span><br><span class="line">        goto fail;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    request = httpMakeRequest();</span><br><span class="line">    if(request == NULL) &#123;</span><br><span class="line">        do_log(L_ERROR, &quot;Couldn&apos;t allocate client request.\n&quot;);</span><br><span class="line">        code = 500;</span><br><span class="line">        message = internAtom(&quot;Couldn&apos;t allocate client request&quot;);</span><br><span class="line">        goto fail;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(connection-&gt;version != HTTP_UNKNOWN &amp;&amp; version != connection-&gt;version) &#123;</span><br><span class="line">        do_log(L_WARN, &quot;Client version changed!\n&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    connection-&gt;version = version;</span><br><span class="line">    request-&gt;flags = REQUEST_PERSISTENT;</span><br><span class="line">    request-&gt;method = method;</span><br><span class="line">    request-&gt;cache_control = no_cache_control;</span><br><span class="line">    httpQueueRequest(connection, request);</span><br><span class="line">    connection-&gt;reqbegin = rc;</span><br><span class="line">    return httpClientRequest(request, url);</span><br><span class="line"></span><br><span class="line"> fail:</span><br><span class="line">    if(url) releaseAtom(url);</span><br><span class="line">    shutdown(connection-&gt;fd, 0);</span><br><span class="line">    connection-&gt;reqlen = 0;</span><br><span class="line">    connection-&gt;reqbegin = 0;</span><br><span class="line">    httpConnectionDestroyReqbuf(connection);</span><br><span class="line">    connection-&gt;flags &amp;= ~CONN_READER;</span><br><span class="line">    httpClientNewError(connection, METHOD_UNKNOWN, 0, code, message);</span><br><span class="line">    return 1;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
+    <div class="post-spread">
       
     </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2014/09/26/WeiXin-Web-App-Coding-Convention-And-Best-Practice/" itemprop="url">
-                  微信web页面开发代码规范以及最佳实践
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2014-09-26T13:41:32+08:00" content="2014-09-26">
-              2014-09-26
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2014/09/26/WeiXin-Web-App-Coding-Convention-And-Best-Practice/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/09/26/WeiXin-Web-App-Coding-Convention-And-Best-Practice/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本来专职是做iOS开发的，对 <code>node.js</code> 感兴趣，所以也学习过服务器开发的一些皮毛。前段时间公司的一个产品，要覆盖iOS、Android和微信web这3个前端，微信web页面的第一个版本，是服务器端同事用最传统的web技术做出来的，也就是使用后端模板渲染的技术组装页面，前端js则使用了 <code>jQuery</code> 做简单的操作。东西做出来后，体验特别的不好，尤其是每次页面跳转都要加载一个新页面，会有延迟。后来狠下决心重做一遍，完全采用前端渲染的技术。当时本来就缺人手，好歹我也算是会用JavaScript，义不容辞的自然也就把这个项目接手过来了。</p>
-<p>做的过程很累，特别的赶进度，而且是摸着石头过河，未知的因素很多。还好iOS做的很熟悉了，很多经验或问题，可以直接照搬到web端，借助Google和Stack Overflow，记录了一大堆笔记出来。前两天另一个团队启动新项目，微信web端也是要做的，同事便找到我，想要一些经验分享，琢磨了一下，笔记写的比较凌乱，毕竟主要是给自己看的，符合自己的思维模式习惯，但是并不适合给别人看，干脆整理一份出来，方便别人查看，对自己也是再次清理一下思路。</p>
-<h3 id="CSS中如何命名class"><a href="#CSS中如何命名class" class="headerlink" title="CSS中如何命名class"></a>CSS中如何命名class</h3><p>这个话题没有唯一答案，而且特别的松散，风格很多。</p>
-<p>目前团队里使用 <a href="http://webuild.envato.com/blog/how-to-scale-and-maintain-legacy-css-with-sass-and-smacss/" target="_blank" rel="external">http://webuild.envato.com/blog/how-to-scale-and-maintain-legacy-css-with-sass-and-smacss/</a> 这种方案，但是并不完全遵照它的代码模板，比如我们不使用 <code>Sass</code> 语法，而是用 <code>SCSS</code> 语法。</p>
-<p>另外还推荐阅读 <a href="http://blog.jobbole.com/47702/" target="_blank" rel="external">http://blog.jobbole.com/47702/</a> 这个里面提到了几乎所有的技术、框架、思路，比如 <code>Sass</code>、<code>BEM</code>、<code>OOCSS</code>、<code>SMACSS</code>、<code>OrganicCSS</code>等等。</p>
-<h3 id="使用-Sass-编写CSS"><a href="#使用-Sass-编写CSS" class="headerlink" title="使用 Sass 编写CSS"></a>使用 <code>Sass</code> 编写CSS</h3><p>这个没啥多说的，语法并不难。引入了编程语言中的一些思路和技巧，对于iOS和Android开发者来说，很容易上手。</p>
-<h3 id="CSS书写规范-amp-amp-顺序"><a href="#CSS书写规范-amp-amp-顺序" class="headerlink" title="CSS书写规范 &amp;&amp; 顺序"></a>CSS书写规范 &amp;&amp; 顺序</h3><p>参照 <a href="http://markdotto.com/2011/11/29/css-property-order/" target="_blank" rel="external">http://markdotto.com/2011/11/29/css-property-order/</a> 以及 <a href="http://codegeekz.com/standardizing-css-property-order/" target="_blank" rel="external">http://codegeekz.com/standardizing-css-property-order/</a></p>
-<h3 id="如何计算-CSS-Box-Model-中的-width-和-height"><a href="#如何计算-CSS-Box-Model-中的-width-和-height" class="headerlink" title="如何计算 CSS Box Model 中的 width 和 height"></a>如何计算 <code>CSS Box Model</code> 中的 <code>width</code> 和 <code>height</code></h3><p>我们使用 <code>CSS3</code> 中的 <a href="http://www.w3school.com.cn/cssref/pr_box-sizing.asp" target="_blank" rel="external"><code>border-box</code></a> 模型，这个就和iOS中的 <code>UIView</code> 的尺寸模型保持了一致，也更直观，容易理解。 </p>
-<h3 id="使用-Flexbox-做-Layout"><a href="#使用-Flexbox-做-Layout" class="headerlink" title="使用 Flexbox 做 Layout"></a>使用 <code>Flexbox</code> 做 Layout</h3><p>项目的前期，为了实现一些手机上常见的布局，我们大量使用了CSS中的 <code>float</code> 、<code>table-cell</code> 等等，但是代码会比较复杂，而且可读性不好。直到发现了神器 <a href="http://css-tricks.com/snippets/css/a-guide-to-flexbox/" target="_blank" rel="external"><code>Flexbox</code></a>。</p>
-<p>另外，还有一个基于 <code>Sass</code> 的工具 <a href="https://github.com/mastastealth/sass-flex-mixin.git" target="_blank" rel="external">https://github.com/mastastealth/sass-flex-mixin.git</a>，帮助我们更好的进行编码。</p>
-<h3 id="使用-Yeoman-实现工作流"><a href="#使用-Yeoman-实现工作流" class="headerlink" title="使用 Yeoman 实现工作流"></a>使用 <code>Yeoman</code> 实现工作流</h3><p>不懂得使用工具的web开发者，不是好前端，嘿嘿 ^_^</p>
-<h3 id="MV-框架-Or-jQuery-类型的库"><a href="#MV-框架-Or-jQuery-类型的库" class="headerlink" title="MV* 框架 Or jQuery 类型的库"></a><code>MV*</code> 框架 Or <code>jQuery</code> 类型的库</h3><ul>
-<li>单纯从技术角度来看，<a href="https://angularjs.org/" target="_blank" rel="external">AngularJS</a> 是最合适的框架，而且针对mobile，还有基于 <code>AngularJS</code> 的 <a href="http://ionicframework.com/" target="_blank" rel="external">Ionic</a> 框架。<code>Ionic</code> 是对手机适配的最好的框架(没有之一)。但是 <code>Ionic</code> 的体积比较大，官方宣传时定义其为 <em>framework for developing hybrid mobile apps</em>。如果是对网速不敏感的使用场景，或者网速很快的场景，其实 <code>Ionic</code> 是可以做 <code>web app</code> 的。</li>
-<li>百度开源的 <a href="http://gmu.baidu.com/" target="_blank" rel="external">gmu</a>，是类似于 <code>jQuery UI</code> 的库，但是是基于 <code>zepto</code> 的，很轻量级，而且也提供了不少的 <code>widget</code>。但是为了轻量，并没有套用 <code>MV*</code> 模式，所以应用场景复杂的时候，代码通常会组织的比较凌乱。交互界面复杂的时候，还会暴露出各种各样的坑，比如click事件穿透，就让我们大吃苦头。</li>
-<li>我个人已经不太愿意继续使用 <code>gmu</code> 了，如果<strong><em>真正只需要开发轻量级的页面</em></strong>，我宁愿直接用 <code>Sass</code> + <code>zepto</code> 或 <a href="http://minifiedjs.com/" target="_blank" rel="external">http://minifiedjs.com/</a> 来实现。</li>
-<li><a href="http://backbonejs.org/" target="_blank" rel="external">Backbone</a> 是相对轻量级的 <code>MVC</code> 框架，在体积大小和功能上有合理的舍取，但是框架本身只注重设计模式的引入，并不包含一套完整的针对mobile的 <code>widget</code>，所以我们还整理了另外一种思路，就是基于 <code>Backbone</code>，再加上各种各样小的lib，根据需求组合起来使用。这种方案可能存在的问题就是这些lib各自为政，不像 <code>AngularJS</code> 这种框架一样都在一个体系内协同工作，所以开发的时候也许会有很多坑，得做一遍才会有深刻的体会。有两个例子，非常值得学习参考，<a href="https://github.com/ccoenraets/directory-backbone-ratchet" target="_blank" rel="external">https://github.com/ccoenraets/directory-backbone-ratchet</a> 和 <a href="http://n12v.com/2-way-data-binding/" target="_blank" rel="external">http://n12v.com/2-way-data-binding/</a>。</li>
-</ul>
-<h3 id="常见widget"><a href="#常见widget" class="headerlink" title="常见widget"></a>常见<code>widget</code></h3><p>按照iOS平台上的开发经验，针对mobile，常见的 <code>widget</code> 包括这些(有官方SDK自带的，也有大量第三方开源的，iOS平台现在很完善，有很多 <code>widget</code> 可以拿来即用)</p>
-<ul>
-<li>button，textinput，slider，progress bar，image view，switch等等，这些是最常见的 <code>widget</code></li>
-<li>全屏HUD，比如iOS上的 <a href="https://github.com/jdg/MBProgressHUD" target="_blank" rel="external">https://github.com/jdg/MBProgressHUD</a></li>
-<li>全屏的菜单选择类 <code>widget</code>，比如iOS自带的 <code>UIAlertView</code> 和 <code>UIActionSheet</code></li>
-<li>popview，比如iOS上的 <a href="https://github.com/chrismiles/CMPopTipView.git" target="_blank" rel="external">https://github.com/chrismiles/CMPopTipView.git</a></li>
-<li>免干扰式的下拉信息提示框，比如iOS上的 <a href="https://github.com/toursprung/TSMessages.git" target="_blank" rel="external">https://github.com/toursprung/TSMessages.git</a></li>
-<li>系统级的页面切换方式，比如iOS自带的 <code>UINavigationController</code> 和 <code>UITabBarController</code>，以及第三方开源的 <a href="https://github.com/ECSlidingViewController/ECSlidingViewController.git" target="_blank" rel="external">https://github.com/ECSlidingViewController/ECSlidingViewController.git</a></li>
-</ul>
-<p>mobile web平台上，<code>widget</code> 的生态环境并不好。相对而言，<a href="http://ionicframework.com/" target="_blank" rel="external">Ionic</a> 自带的<code>widget</code>是最完善的，而且有框架的支持，也更容易实现自定义的 <code>widget</code>。唯一的问题就是 <code>Ionic</code> 框架比较大。</p>
-<p><code>Backbone</code> 或 <code>gmu</code> 中，除了最常见的 <code>widget</code> 外，其他的通常都只能自己实现，比如在使用 <code>gmu</code> 的时候，我们就只能自己编写<a href="https://github.com/fengjian0106/actionsheet.git" target="_blank" rel="external"><code>ActionSheet</code></a>、全屏HUD、免干扰式的下拉信息提示框、以及系统级的页面导航控制器。由于缺少框架级的支持，除了 <a href="https://github.com/fengjian0106/actionsheet.git" target="_blank" rel="external"><code>ActionSheet</code></a> 外，其他几个 <code>widget</code> 的代码实现都很粗暴，而且遇到了各种各样的bug。</p>
-<p>实际项目中，最好从一开始做交互设计的时候，就考虑 <code>widget</code> 的问题，尽量使用最常见的 <code>widget</code>，舍弃一些复杂的交互方式。</p>
-
-          
-        
-      
-    </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2014/09/26/An-iOS-Keyboard-Extension-Performance-Optimize/" itemprop="url">
-                  iOS输入法性能优化
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2014-09-26T10:25:52+08:00" content="2014-09-26">
-              2014-09-26
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2014/09/26/An-iOS-Keyboard-Extension-Performance-Optimize/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/09/26/An-iOS-Keyboard-Extension-Performance-Optimize/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>一年前指导同事开发了一款andriod版的输入法(非中文)，其中的词库引擎，是我做的技术选型并且在iOS平台上做了原型验证，采用的是 <code>Ternary Search Tree</code>。一年后，也就是最近，随着iOS8的发布，我们也要发布一款iOS版的输入法。</p>
-<h3 id="遇到的主要问题"><a href="#遇到的主要问题" class="headerlink" title="遇到的主要问题"></a>遇到的主要问题</h3><ol>
-<li><code>Ternary Search Tree</code> 实现 <code>prefix match</code> 的速度很快，但是因为只是一个纯粹的内存数据结构，所以输入法词库的容量是一个瓶颈。在android平台上，考虑多方面因素后，我们的词库中只有3万左右的单词量。iOS平台上做原型验证的时候，词库容量也只能做到10万左右。但是实际的业务需求中，是希望词库容量可以进一步增大的。</li>
-<li>iOS版本输入法的开发过程中，遇到了另外一个问题，就是键盘页面的加载速度和切换速度有点慢，用户能够感觉出来。</li>
-</ol>
-<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><h4 id="词库容量"><a href="#词库容量" class="headerlink" title="词库容量"></a>词库容量</h4><p>词库容量扩充这个问题，其实一直是一个难题，在 <code>Ternary Search Tree</code> 上也做过一些优化，但是变化并不明显。反而是在做server端开发，学习 <code>LevelDB</code> 的时候，碰巧发现 <code>LevelDB</code> 是一个很好的替代。首先 <code>LevelDB</code> 支持 <code>prefix search</code>，而且搜索速度也很快，测试数据表明完全满足我们的业务需求，其次 <code>LevelDB</code> 是将数据存储在文件系统上的，没有了内存大小的限制，词库的容量很轻松就可以扩充100倍以上，而且有了这种近乎无限的词库容量后，之前有一些需要复杂算法甚至很难实现的业务需求，现在也可以在超大词库的基础上，用<strong>“简单但是粗暴”</strong>的算法实现出来。</p>
-<p>iOS平台上的 <code>Core Data</code> 是一套相当好用的数据持久化存储框架，唯一<em><code>可能存在</code></em>的问题就是性能，因此有些开发者在某些场景中，还是愿意去选择使用 <code>SQLite</code> 。有了这次的开发经验后，相信在某些应用场景中， <code>LevelDB</code> 也将会是一个很好的替代方案，比如 Square 开源的 <a href="https://github.com/viewfinderco/viewfinder.git" target="_blank" rel="external">Viewfinder</a> 中的客户端，就是用  <code>LevelDB</code> 实现的数据存储。<code>LevelDB</code> 的核心是 <code>LSM-Tree</code>，其实 <a href="http://sqlite.org/src4/doc/trunk/www/lsmusr.wiki" target="_blank" rel="external">SQLite4</a> 的核心，也是 <code>LSM-Tree</code>，小伙伴们，你们知道吗 :-)</p>
-<h4 id="页面加载和切换速度"><a href="#页面加载和切换速度" class="headerlink" title="页面加载和切换速度"></a>页面加载和切换速度</h4><p>说实话，页面加载速度这个问题，挺出乎意料的，以前我们团队也做了这么多iOS应用了，从来没有在页面速度上遇到过问题，用 <code>Instruments</code>、 <code>NSLog</code> 对比分析了一遍，测量出来的页面加载时间，也和其他应用中页面加载消耗的时间差不多。大家讨论了一下为什么用户会觉得慢，得出的结论是，输入法本来就是一个效率型的工具app，用户心理的期待之一，就是键盘的速度要快，而普通类型的app，用户对速度不会这么敏感。</p>
-<p>问题已经出来了，还是得想办法去优化，吭哧吭哧写代码调试，从3个方面压缩了页面加载切换时消耗的时间：</p>
-<ol>
-<li>键盘的view，是分了好几个层次的，当作为container的UIView加载完成后，就立刻让键盘先显示出来，然后再触发加载真正的keyboard view，这样给用户的一个心理感觉就是键盘弹出的速度很快。</li>
-<li>键盘切换的时候，不再每次都重新从xib中加载对应的view，而是将view缓存在cache里面，用空间换时间。</li>
-<li>移除了keyboard view中每个key view上的 <code>Auto Layout</code> 约束条件，直接在 <code>layoutSubviews</code> 方法中设置subview的 <code>frame</code>，关于这个优化思路，可以看看 <a href="http://pilky.me/36/" target="_blank" rel="external">Optimising Autolayout</a>。需要强调的是，我们并不是否定 <code>Auto Layout</code> ，实际上我们团队现在采用的思路是 <code>Auto Layout</code> 和 <code>Manual Frame Layout</code> 一起使用，代码布局和xib布局一起使用，根据页面的需求做出更合适的选择。</li>
-<li>2014-10-16更新，借助Facebook出品的神器<a href="https://github.com/facebook/AsyncDisplayKit.git，又抠了一些性能出来" target="_blank" rel="external">https://github.com/facebook/AsyncDisplayKit.git，又抠了一些性能出来</a>:]</li>
-</ol>
-<p>这款输入法app，我们还全面切换到使用 <code>ReactiveCocoa</code> 这个框架进行开发，当时也怀疑过是不是因为这个框架造成了性能的损失，从 <code>Instruments</code> 的测量数据来看，我们的顾虑是多余的， <code>ReactiveCocoa</code> 虽然使得整个函数调用栈的层次增加了不少，但是，这不是性能瓶颈。</p>
-
-          
-        
-      
-    </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2014/09/26/Move-To-A-New-Blog/" itemprop="url">
-                  博客搬家 && 重新开博
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2014-09-26T10:20:21+08:00" content="2014-09-26">
-              2014-09-26
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2014/09/26/Move-To-A-New-Blog/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/09/26/Move-To-A-New-Blog/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>和小伙伴一起创业一年半了，投入了很大的精力，也舍弃了个人的一些事情，写博客便是其中之一。这一年多来，其实还是写了很多个人笔记，觉得还是有必要整理一些出来，所以便有了这个新的站点。</p>
-
-          
-        
-      
-    </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-  </section>
-
-  
+  </div>
 
 
           </div>
@@ -1173,6 +509,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/04/10/CSP-Concurrency-Patterns-In-Swift/"
+           data-title="CSP Concurrency Patterns In Swift" data-url="http://fengjian0106.github.io/2016/04/10/CSP-Concurrency-Patterns-In-Swift/">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -1192,8 +536,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.jpg"
@@ -1238,6 +591,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要讨论并发-concurrency"><span class="nav-number">2.</span> <span class="nav-text">为什么要讨论并发 (concurrency)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是并发？"><span class="nav-number">3.</span> <span class="nav-text">什么是并发？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并发-concurrency-不是并行-parallelism"><span class="nav-number">4.</span> <span class="nav-text">并发 (concurrency) 不是并行 (parallelism)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是好的代码架构"><span class="nav-number">5.</span> <span class="nav-text">什么是好的代码架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSP-的历史"><span class="nav-number">6.</span> <span class="nav-text">CSP 的历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Venice-Golang-和-Erlang-的差异"><span class="nav-number">7.</span> <span class="nav-text">Venice / Golang 和 Erlang 的差异</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSP-的基本使用"><span class="nav-number">8.</span> <span class="nav-text">CSP 的基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#从下面这个简单的-boring-函数开始"><span class="nav-number">8.0.1.</span> <span class="nav-text">从下面这个简单的 boring 函数开始</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#稍微改动一下"><span class="nav-number">8.0.2.</span> <span class="nav-text">稍微改动一下</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#进入正题"><span class="nav-number">8.0.3.</span> <span class="nav-text">进入正题</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#继续改动代码"><span class="nav-number">8.0.4.</span> <span class="nav-text">继续改动代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#协程-coroutine"><span class="nav-number">8.0.5.</span> <span class="nav-text">协程 (coroutine)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#通讯-communication"><span class="nav-number">8.0.6.</span> <span class="nav-text">通讯 (communication)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Channel"><span class="nav-number">8.0.7.</span> <span class="nav-text">Channel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-Channel"><span class="nav-number">8.0.8.</span> <span class="nav-text">使用 Channel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#同步-Synchronization"><span class="nav-number">8.0.9.</span> <span class="nav-text">同步 (Synchronization)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#带缓冲的-channel"><span class="nav-number">8.0.10.</span> <span class="nav-text">带缓冲的 channel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Golang-哲学"><span class="nav-number">8.0.11.</span> <span class="nav-text">Golang 哲学</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模式-Patterns"><span class="nav-number">9.</span> <span class="nav-text">模式 (Patterns)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Generator-模式：通过函数返回一个-channel-给调用者"><span class="nav-number">9.0.1.</span> <span class="nav-text">Generator 模式：通过函数返回一个 channel 给调用者</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#利用-channel-作为-service-的接口"><span class="nav-number">9.0.2.</span> <span class="nav-text">利用 channel 作为 service 的接口</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#多路复用-Multiplexing"><span class="nav-number">9.0.3.</span> <span class="nav-text">多路复用 (Multiplexing)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Restoring-sequencing"><span class="nav-number">9.0.4.</span> <span class="nav-text">(Restoring sequencing)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Select"><span class="nav-number">9.0.5.</span> <span class="nav-text">Select</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在-Select-的基础上实现超时机制-Timeout"><span class="nav-number">9.0.6.</span> <span class="nav-text">在 Select 的基础上实现超时机制 (Timeout)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Select-操作的整体超时"><span class="nav-number">9.0.7.</span> <span class="nav-text">Select 操作的整体超时</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#quit-channel"><span class="nav-number">9.0.8.</span> <span class="nav-text">quit channel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在-quit-channel-上接收消息"><span class="nav-number">9.0.9.</span> <span class="nav-text">在 quit channel 上接收消息</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Daisy-chain"><span class="nav-number">9.0.10.</span> <span class="nav-text">Daisy-chain</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统软件-Systems-Software"><span class="nav-number">10.</span> <span class="nav-text">系统软件 (Systems Software)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#例子：Google-Search"><span class="nav-number">10.0.1.</span> <span class="nav-text">例子：Google Search</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#模拟各种-search-service"><span class="nav-number">10.0.2.</span> <span class="nav-text">模拟各种 search service</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Google-Search-1-0"><span class="nav-number">10.0.3.</span> <span class="nav-text">Google Search 1.0</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Google-Search-2-0"><span class="nav-number">10.0.4.</span> <span class="nav-text">Google Search 2.0</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Google-Search-2-1"><span class="nav-number">10.0.5.</span> <span class="nav-text">Google Search 2.1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#避免超时"><span class="nav-number">10.0.6.</span> <span class="nav-text">避免超时</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Google-Search-3-0"><span class="nav-number">10.0.7.</span> <span class="nav-text">Google Search 3.0</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不要过度使用"><span class="nav-number">11.</span> <span class="nav-text">不要过度使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后记"><span class="nav-number">12.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -1334,6 +698,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
