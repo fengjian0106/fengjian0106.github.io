@@ -1,0 +1,595 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言FRP 是一门学习曲线比较陡峭的技术，回想自己以前的学习过程，也是反反复复好几次，而且总是挫败感很强。不过还好坚持了下来，现在也算是用着比较顺手了。
+关于 FRP， 最容易被吐槽的地方就是没有好的学习资料和文档。一开始我也是这种感觉，后来在反复尝试的过程中，发现其实真的不是文档的问题。先说我的结论 – 不要指望脱离代码能够把 FRP 的原理讲清楚，这是 FRP 和其他编程技术的一个明显差异，这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用 FRP 事半功倍的写代码，第一篇 The Power Of Composition In FRP Part 1">
+<meta property="og:url" content="http://fengjian0106.github.io/2016/04/17/The-Power-Of-Composition-In-FRP-Part-1~/index.html">
+<meta property="og:site_name" content="FengJian's Blog">
+<meta property="og:description" content="前言FRP 是一门学习曲线比较陡峭的技术，回想自己以前的学习过程，也是反反复复好几次，而且总是挫败感很强。不过还好坚持了下来，现在也算是用着比较顺手了。
+关于 FRP， 最容易被吐槽的地方就是没有好的学习资料和文档。一开始我也是这种感觉，后来在反复尝试的过程中，发现其实真的不是文档的问题。先说我的结论 – 不要指望脱离代码能够把 FRP 的原理讲清楚，这是 FRP 和其他编程技术的一个明显差异，这">
+<meta property="og:updated_time" content="2016-04-22T07:31:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用 FRP 事半功倍的写代码，第一篇 The Power Of Composition In FRP Part 1">
+<meta name="twitter:description" content="前言FRP 是一门学习曲线比较陡峭的技术，回想自己以前的学习过程，也是反反复复好几次，而且总是挫败感很强。不过还好坚持了下来，现在也算是用着比较顺手了。
+关于 FRP， 最容易被吐槽的地方就是没有好的学习资料和文档。一开始我也是这种感觉，后来在反复尝试的过程中，发现其实真的不是文档的问题。先说我的结论 – 不要指望脱离代码能够把 FRP 的原理讲清楚，这是 FRP 和其他编程技术的一个明显差异，这">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 用 FRP 事半功倍的写代码，第一篇 The Power Of Composition In FRP Part 1 | FengJian's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">FengJian's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">iOS Golang node.js Developer</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                用 FRP 事半功倍的写代码，第一篇 The Power Of Composition In FRP Part 1
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-04-17T21:25:59+08:00" content="2016-04-17">
+              2016-04-17
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/04/17/The-Power-Of-Composition-In-FRP-Part-1~/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/04/17/The-Power-Of-Composition-In-FRP-Part-1~/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p><a href="https://en.wikipedia.org/wiki/Functional_reactive_programming" target="_blank" rel="external">FRP</a> 是一门学习曲线比较陡峭的技术，回想自己以前的学习过程，也是反反复复好几次，而且总是挫败感很强。不过还好坚持了下来，现在也算是用着比较顺手了。</p>
+<p>关于 FRP， 最容易被吐槽的地方就是没有好的学习资料和文档。一开始我也是这种感觉，后来在反复尝试的过程中，发现其实真的不是文档的问题。先说我的结论 – 不要指望脱离代码能够把 FRP 的原理讲清楚，这是 FRP 和其他编程技术的一个明显差异，这就类似于很难用一段文字把一个数学公式描述清楚一样。而且，即便是开始看 FRP 的各种代码了，还是会觉得太抽象了，仍然需要大量的时间体会代码，或者说，『悟』出其中的一些基本门道。</p>
+<p>关于入门学习，没有捷径，最好的办法就是看代码，下面是我觉得比较好的一些入门学习资料</p>
+<ul>
+<li><a href="https://gist.github.com/staltz/868e7e9bc2a7b8c1f754" target="_blank" rel="external">The introduction to Reactive Programming you’ve been missing</a></li>
+<li><a href="https://github.com/ReactiveCocoa/ReactiveCocoa/tree/master/Documentation" target="_blank" rel="external">ReactiveCocoa Documentation</a> <em>我本人主要是做 iOS 开发，目前使用的是 RAC 这个库，所以它的官方文档也是一个学习途径。另外，本文中的代码也是使用 RAC 进行编写</em></li>
+<li><a href="https://www.raywenderlich.com/62699/reactivecocoa-tutorial-pt1" target="_blank" rel="external">ReactiveCocoa Tutorial – The Definitive Introduction: Part 1/2</a></li>
+<li><a href="https://www.raywenderlich.com/62796/reactivecocoa-tutorial-pt2" target="_blank" rel="external">ReactiveCocoa Tutorial – The Definitive Introduction: Part 2/2</a></li>
+<li><a href="http://rxmarbles.com/" target="_blank" rel="external">Interactive diagrams of Rx Observables</a> <em>这个是一组动态效果图，用可视化的效果演示了一些 FRP 里常用操作(当然，其实还是很抽象的)</em></li>
+</ul>
+<p>之所以说 FRP 的学习曲线很陡峭，不仅仅是指它的入门学习比较耗时费脑，当入了门或者稍微找到一些感觉之后，紧接着就会面对第二个问题：FRP 里面提供的都是一些比较抽象的函数操作，怎样才能用这些基本函数来解决各种各样的业务问题？尤其是那些很抽象的操作，怎样才能用起来？</p>
+<p>这个系列的文章，主要就是针对后面这第二个问题，做的一些 demo 演示。可以把 FRP 看成是一种更高级的 <a href="http://www.dossier-andreas.net/software_architecture/pipe_and_filter.html" target="_blank" rel="external">Pipeline</a> 编程范式，Pipeline 的一个精髓，就是可以灵活的组合，虽然 FRP 里常用的操作也就那么几十个，但是一旦像搭积木那样对它们进行了组装之后，FRP 的强大之处一下子就展现了出来。</p>
+<p>FRP 通常是以库或框架的形式提供给使用者，目前已经有很多常见编程语言的具体实现。在这个系列文章中，将使用 <strong>RAC 2 (ReactiveCocoa 的 Objective-C 版本)</strong> 进行编写。但是 FRP 本质上是一种编程范式，从 Pipeline 的角度来看，它的侧重点在于如何组装出不同形状的 Pipeline，而不太在乎 Pipeline 的具体构成材料(编程语言)，从框架的角度来看，虽然有不同语言版本的实现，但是每个版本里，提供的诸如 map、flatMap、reduce 等基础操作，在概念上和行为模式上，又都是一样的。所以，FRP 也是一门 “Learn once, write anywhere” 的技术。</p>
+<p>除了组合操作，FRP 的另外一个优势就是可以减少中间状态变量的使用，在本系列文章中，也会时刻体现这一点。</p>
+<h3 id="处理键盘的弹出和隐藏"><a href="#处理键盘的弹出和隐藏" class="headerlink" title="处理键盘的弹出和隐藏"></a>处理键盘的弹出和隐藏</h3><p>这个业务其实是非常简单的，就是在某个 UIViewController 里面，当检测到键盘弹出的时候，为了避免键盘遮挡住某个 UIView，需要根据键盘的高度重新对 view 进行 layout，用 RAC 写出来的代码是下面这个样子：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//&lt;1&gt;</span></span><br><span class="line">- (<span class="keyword">void</span>)initPipeline &#123;</span><br><span class="line">    @weakify(<span class="keyword">self</span>);</span><br><span class="line">    RACSignal *keyboardWillShowNotification =</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span>.defaultCenter rac_addObserverForName:<span class="built_in">UIKeyboardWillShowNotification</span> object:<span class="literal">nil</span>]</span><br><span class="line">     map:^<span class="keyword">id</span>(<span class="built_in">NSNotification</span> *notification) &#123;</span><br><span class="line">         <span class="comment">//&lt;2&gt;</span></span><br><span class="line">         <span class="built_in">NSDictionary</span>* userInfo = [notification userInfo];</span><br><span class="line">         <span class="built_in">NSValue</span>* aValue = [userInfo objectForKey:<span class="built_in">UIKeyboardFrameEndUserInfoKey</span>];</span><br><span class="line">         <span class="keyword">return</span> aValue;</span><br><span class="line">     &#125;];</span><br><span class="line">    </span><br><span class="line">    [[[[[<span class="built_in">NSNotificationCenter</span>.defaultCenter rac_addObserverForName:<span class="built_in">UIKeyboardWillHideNotification</span> object:<span class="literal">nil</span>]</span><br><span class="line">        map:^<span class="keyword">id</span>(<span class="built_in">NSNotification</span> *notification) &#123;</span><br><span class="line">        	<span class="comment">//&lt;3&gt;</span></span><br><span class="line">            <span class="keyword">return</span> [<span class="built_in">NSValue</span> valueWith<span class="built_in">CGRect</span>:<span class="built_in">CGRectZero</span>];</span><br><span class="line">        &#125;]</span><br><span class="line">       merge:keyboardWillShowNotification]   <span class="comment">//&lt;4&gt;</span></span><br><span class="line">      takeUntil:<span class="keyword">self</span>.rac_willDeallocSignal]  <span class="comment">//&lt;5&gt;</span></span><br><span class="line">     subscribeNext:^(<span class="built_in">NSValue</span> *value) &#123;</span><br><span class="line">         <span class="comment">//&lt;6&gt;</span></span><br><span class="line">         @strongify(<span class="keyword">self</span>);</span><br><span class="line">         <span class="keyword">self</span>.messageEditViewContainerViewBottomConstraint.constant = <span class="number">5.0</span> + [value <span class="built_in">CGRectValue</span>].size.height;</span><br><span class="line">         </span><br><span class="line">         [<span class="keyword">self</span>.view updateConstraints];</span><br><span class="line">         [<span class="built_in">UIView</span> animateWithDuration:<span class="number">0.6</span> animations:^&#123;</span><br><span class="line">             @strongify(<span class="keyword">self</span>);</span><br><span class="line">             [<span class="keyword">self</span>.view layoutIfNeeded];</span><br><span class="line">         &#125;];</span><br><span class="line">     &#125; completed:^&#123;</span><br><span class="line">         <span class="comment">//&lt;7&gt;</span></span><br><span class="line">         <span class="built_in">NSLog</span>(<span class="string">@"%s, Keyboard Notification signal completed"</span>, __PRETTY_FUNCTION__);</span><br><span class="line">     &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用 &lt;&gt; 标注的地方，是比较关键的点：</p>
+<ol>
+<li>很多时候，Pipeline 都是只需要构建一次的，如果是针对 UIViewController，通常都是在 viewDidLoad 方法里调用 [self initPipeline]，如果是针对 UIView，则很有可能是在 awakeFromNib 方法里进行调用，这里遵循的一个策略是在模块『活』起来之后，应该尽快的构造所有的 Pipeline，如果是 model 或 service 类型的模块，则很可能是在 init 完成后，就应该调用 initPipeline，但是对于 view 性质的模块，因为有 iOS 平台相关的加载策略，而且 Pipeline 通常又是和 UI 交互有关，所以通常是需要在 view 生命期相关的方法中才构造 Pipeline。</li>
+<li>通过 map 操作，把 UIKeyboardWillShowNotification 转换成一个 CGRect(包装在 NSValue 里面)。<a href="http://rxmarbles.com/#map" target="_blank" rel="external">map</a> 操作是 FRP 里面最核心的一个基本操作，</li>
+</ol>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/10/CSP-Concurrency-Patterns-In-Swift/" rel="next" title="CSP Concurrency Patterns In Swift">
+                <i class="fa fa-chevron-left"></i> CSP Concurrency Patterns In Swift
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/04/17/The-Power-Of-Composition-In-FRP-Part-1/" rel="prev" title="用 FRP 事半功倍的写代码（一）">
+                用 FRP 事半功倍的写代码（一） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/04/17/The-Power-Of-Composition-In-FRP-Part-1~/"
+           data-title="用 FRP 事半功倍的写代码，第一篇 The Power Of Composition In FRP Part 1" data-url="http://fengjian0106.github.io/2016/04/17/The-Power-Of-Composition-In-FRP-Part-1~/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="FengJian" />
+          <p class="site-author-name" itemprop="name">FengJian</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">9</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        <div class="links-of-blogroll motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#处理键盘的弹出和隐藏"><span class="nav-number">2.</span> <span class="nav-text">处理键盘的弹出和隐藏</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">FengJian</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"fengjian0106"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>
