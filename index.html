@@ -241,6 +241,137 @@
             
               
                 
+                <a class="post-title-link" href="/2016/07/25/The-Power-Of-Composition-In-FRP-Part-5/" itemprop="url">
+                  用 ReactiveCocoa 事半功倍的写代码（五）
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-25T16:40:42+08:00" content="2016-07-25">
+              2016-07-25
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/07/25/The-Power-Of-Composition-In-FRP-Part-5/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/07/25/The-Power-Of-Composition-In-FRP-Part-5/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="体会-Composition-的含义"><a href="#体会-Composition-的含义" class="headerlink" title="体会 Composition 的含义"></a>体会 Composition 的含义</h3><p>有些读者可能会注意到一点，这个系列教程的英文标题是 The Power Of Composition In FRP，看上去并不像是中文标题的直接翻译，其实这也是纠结过后的一个妥协的选择，其实我个人更喜欢这个英文标题，因为 Composition 这个词，更能体现出 FRP 的一个精髓理念，如果要用一个中文词语来表示，我觉得『组装』这个词更准确一些。</p>
+<p>先看下面这段代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line">- (void)fetchNecessaryDataForAccounts:(NSArray&lt;FMAccount *&gt; *)accounts &#123;</span><br><span class="line">    NSParameterAssert(accounts != nil);</span><br><span class="line">    NSParameterAssert(accounts.count &gt; 0);</span><br><span class="line">    </span><br><span class="line">    @weakify(self);</span><br><span class="line">    [[[[[accounts.rac_sequence signal] //1</span><br><span class="line">        map:^id(FMAccount *account) &#123;</span><br><span class="line">            //2</span><br><span class="line">            return [[[QHOldAccountMigration fetchInitialDataForAccount:account]</span><br><span class="line">                     map:^id(FMAccount *account) &#123;</span><br><span class="line">                         //3</span><br><span class="line">                         return RACTuplePack(account, nil);</span><br><span class="line">                     &#125;]</span><br><span class="line">                    catch:^RACSignal *(NSError *error) &#123;</span><br><span class="line">                        //3</span><br><span class="line">                        return [RACSignal return:RACTuplePack(account, error)];</span><br><span class="line">                    &#125;];</span><br><span class="line">        &#125;]</span><br><span class="line">       collect] //4</span><br><span class="line">      flattenMap:^RACStream *(NSArray *arrayOfSignal) &#123;</span><br><span class="line">          return [[RACSignal zip:arrayOfSignal] //4</span><br><span class="line">                  map:^id(RACTuple *tuple) &#123;</span><br><span class="line">                      NSMutableArray *successAccounts = [[NSMutableArray alloc] init];</span><br><span class="line">                      NSMutableArray *failAccounts = [[NSMutableArray alloc] init];</span><br><span class="line">                      </span><br><span class="line">                      for (int i = 0; i &lt; tuple.count; i++) &#123;</span><br><span class="line">                          RACTuple *t = [tuple objectAtIndex:i];</span><br><span class="line">                          FMAccount *account = t.first;</span><br><span class="line">                          NSError *error = t.second;</span><br><span class="line">                          </span><br><span class="line">                          if (error) &#123;</span><br><span class="line">                              [failAccounts addObject:account];</span><br><span class="line">                          &#125; else &#123;</span><br><span class="line">                              [successAccounts addObject:account];</span><br><span class="line">                          &#125;</span><br><span class="line">                      &#125;</span><br><span class="line">                      </span><br><span class="line">                      return RACTuplePack([successAccounts copy], [failAccounts copy]);</span><br><span class="line">                  &#125;];</span><br><span class="line">      &#125;]</span><br><span class="line">     subscribeNext:^(RACTuple *tuple) &#123;</span><br><span class="line">         @strongify(self);</span><br><span class="line">         NSArray *successAccounts = tuple.first;</span><br><span class="line">         NSArray *failAccounts = tuple.second;</span><br><span class="line">         //5</span><br><span class="line">         </span><br><span class="line">         if (failAccounts.count == 0) &#123;</span><br><span class="line">             [self jumpToOriginalLogic];</span><br><span class="line">         &#125; else &#123;</span><br><span class="line">             NSMutableString *title;</span><br><span class="line">             if (successAccounts.count == 0) &#123;</span><br><span class="line">                 title = [[NSMutableString alloc] initWithString:@&quot;所有账号迁移失败，请重新登录&quot;];</span><br><span class="line">             &#125; else &#123;</span><br><span class="line">                 title = [[NSMutableString alloc] initWithString:@&quot;邮箱账号&quot;];</span><br><span class="line">                 for (FMAccount *account in failAccounts) &#123;</span><br><span class="line">                     [title appendFormat:@&quot;%@, &quot;, account.profile.mailAddress];</span><br><span class="line">                 &#125;</span><br><span class="line">                 </span><br><span class="line">                 title = [[title substringToIndex:title.length - 2] mutableCopy];</span><br><span class="line">                 [title appendString:@&quot;迁移失败，需要重新登录&quot;];</span><br><span class="line">             &#125;</span><br><span class="line">             </span><br><span class="line">             UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];</span><br><span class="line">             [alertController addAction:[UIAlertAction actionWithTitle:@&quot;确定&quot; style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) &#123;</span><br><span class="line">                 @strongify(self);</span><br><span class="line">                 for (FMAccount *account in failAccounts) &#123;</span><br><span class="line">                     FMMigrationFailAccount *failAccount = [FMMigrationFailAccount convertAccountToMigrationFailAccount:account];</span><br><span class="line">                     [failAccount save];</span><br><span class="line">                     </span><br><span class="line">                     [[FMManager shareInstance] deleteAccount:account.accountId];</span><br><span class="line">                 &#125;</span><br><span class="line">                 [self jumpToOriginalLogic];</span><br><span class="line">             &#125;]];</span><br><span class="line">             </span><br><span class="line">             UIViewController *viewController = [UIApplication sharedApplication].keyWindow.rootViewController;</span><br><span class="line">             [viewController presentViewController:alertController animated:YES completion:^&#123;</span><br><span class="line">             &#125;];</span><br><span class="line">         &#125;</span><br><span class="line">     &#125; error:^(NSError *error) &#123;</span><br><span class="line">         </span><br><span class="line">     &#125; completed:^&#123;</span><br><span class="line">         </span><br><span class="line">     &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个 pipeline 其实用的就是 <a href="http://fengjian0106.github.io/2016/04/28/The-Power-Of-Composition-In-FRP-Part-3/">collect + combineLatest 或者 zip</a> 这种管道模型，只不过管道内部具体的业务不一样，这里的业务就是针对每一个 FMAccount 帐号，下载一些必要的初始数据，然后等每个下载都完成后，再执行后续的业务，主要就是下面几个点：</p>
+<ol>
+<li>把包含有 FMAccount 的数组，先变换成 signal。</li>
+<li>[QHOldAccountMigration fetchInitialDataForAccount:account] 里面执行的是下载初始数据的具体业务逻辑，其实它的内部就是一个用多个 map 操作串联起来的 pipeline，对应下载初始数据过程中的多个步骤。</li>
+<li>如果 fetchInitialDataForAccount 失败，则把 error 转换成 next 事件，用 tuple 的形式继续向 pipeline 的后续环节传递，等所有的下载都结束后，会统一对 error 进行处理。</li>
+<li>套用 collect + zip 这种 pipeline 模型。</li>
+<li>当所有的下载都结束后，才会运行到这里，successAccounts 和 failAccounts 分别对应成功下载初始数据的所有帐号和下载数据失败了的所有帐号，至于后面 if 分支里的代码，只是后续的一些业务逻辑功能，读者可以不用在意，我们的重点还是在于这个 pipeline 的外形。</li>
+</ol>
+<p>在编写程序的时候，通常我们都会提到『复用』这个概念，最简单的场景就是函数复用，这里的 pipeline 也是一种复用，只不过 pipeline 不像普通函数那样通过抽象出输入参数和返回结果来实现复用，pipeline 的复用体现在管道的形状上，这里所谓的形状，就是把 FRP 中对 signal 的各种操作组装起来后 pipeline 的形状。多个 map 串联是一种形状，collect + zip 是一种形状，之前的教程中提到的那些案例，都可以理解为一种形状(甚至还可以看成是多个不同形状的 pipeline 的进一步组装)，每一种形状的管道，有输入的数据，有输出的数据，同时，还存在各种各样的中间处理环节，每次复用 pipeline 的时候，输入数据、输出数据以及中间处理环节，都是可以根据具体的业务需求灵活的进行填充的。</p>
+<p>回到前面这个例子，accounts 是 pipeline 的输入，successAccounts 和 failAccounts 是 pipeline 的输出，其他的操作都可以看成是中间处理环节。这个 pipeline 仅仅是完成了下载数据的功能，在真实的产品需求中，为了更好的照顾用户体验，还希望能够显示出下载进度信息，也就是说，对于 accounts 这个输入，还需要另外一种形式的输出信息，可以体现出下载进度情况。这里还有一个约束条件，[QHOldAccountMigration fetchInitialDataForAccount:account] 这个操作本身是无法表现出下载数据时的进度信息的，因为并不是下载一个文件(在编程惯例中，通常只在上传和下载文件的时候或类似的场景中，才会设计出能体现进度信息的 API)，所以这里还需要想办法模拟出一种进度信息用来在 UI 上进行显示，主要代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br></pre></td><td class="code"><pre><span class="line">- (void)fetchNecessaryDataForAccounts:(NSArray&lt;FMAccount *&gt; *)accounts &#123;</span><br><span class="line">    NSParameterAssert(accounts != nil);</span><br><span class="line">    NSParameterAssert(accounts.count &gt; 0);</span><br><span class="line">    </span><br><span class="line">    @weakify(self);</span><br><span class="line">    //1</span><br><span class="line">    RACSignal *fetchAllInitialData = [[[[accounts.rac_sequence signal]</span><br><span class="line">                                        map:^id(FMAccount *account) &#123;</span><br><span class="line">                                            return [[[[[QHOldAccountMigration fetchInitialDataForAccount:account]</span><br><span class="line">                                                       map:^id(FMAccount *account) &#123;</span><br><span class="line">                                                           return RACTuplePack(account, nil);</span><br><span class="line">                                                       &#125;]</span><br><span class="line">                                                      catch:^RACSignal *(NSError *error) &#123;</span><br><span class="line">                                                          return [RACSignal return:RACTuplePack(account, error)];</span><br><span class="line">                                                      &#125;]</span><br><span class="line">                                                     multicast:[RACReplaySubject subject]] //3</span><br><span class="line">                                                    autoconnect];</span><br><span class="line">                                        &#125;]</span><br><span class="line">                                       multicast:[RACReplaySubject subject]] //2</span><br><span class="line">                                      autoconnect];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    //4</span><br><span class="line">    RACSignal *businessLogicSignal = [[fetchAllInitialData collect]</span><br><span class="line">                                      flattenMap:^RACStream *(NSArray *arrayOfSignal) &#123;</span><br><span class="line">                                          return [[RACSignal zip:arrayOfSignal]</span><br><span class="line">                                                  map:^id(RACTuple *tuple) &#123;</span><br><span class="line">                                                      NSMutableArray *successAccounts = [[NSMutableArray alloc] init];</span><br><span class="line">                                                      NSMutableArray *failAccounts = [[NSMutableArray alloc] init];</span><br><span class="line">                                                      </span><br><span class="line">                                                      for (int i = 0; i &lt; tuple.count; i++) &#123;</span><br><span class="line">                                                          RACTuple *t = [tuple objectAtIndex:i];</span><br><span class="line">                                                          FMAccount *account = t.first;</span><br><span class="line">                                                          NSError *error = t.second;</span><br><span class="line">                                                          </span><br><span class="line">                                                          if (error) &#123;</span><br><span class="line">                                                              [failAccounts addObject:account];</span><br><span class="line">                                                          &#125; else &#123;</span><br><span class="line">                                                              [successAccounts addObject:account];</span><br><span class="line">                                                          &#125;</span><br><span class="line">                                                      &#125;</span><br><span class="line">                                                      </span><br><span class="line">                                                      return RACTuplePack([successAccounts copy], [failAccounts copy]);</span><br><span class="line">                                                  &#125;];</span><br><span class="line">                                      &#125;];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    [businessLogicSignal</span><br><span class="line">     subscribeNext:^(RACTuple *tuple) &#123;</span><br><span class="line">         @strongify(self);</span><br><span class="line">         NSArray *successAccounts = tuple.first;</span><br><span class="line">         NSArray *failAccounts = tuple.second;</span><br><span class="line">         //5</span><br><span class="line">         if (failAccounts.count == 0) &#123;</span><br><span class="line">             [self jumpToOriginalLogic];</span><br><span class="line">         &#125; else &#123;</span><br><span class="line">             NSMutableString *title;</span><br><span class="line">             if (successAccounts.count == 0) &#123;</span><br><span class="line">                 title = [[NSMutableString alloc] initWithString:@&quot;所有账号迁移失败，请重新登录&quot;];</span><br><span class="line">             &#125; else &#123;</span><br><span class="line">                 title = [[NSMutableString alloc] initWithString:@&quot;邮箱账号&quot;];</span><br><span class="line">                 for (FMAccount *account in failAccounts) &#123;</span><br><span class="line">                     [title appendFormat:@&quot;%@, &quot;, account.profile.mailAddress];</span><br><span class="line">                 &#125;</span><br><span class="line">                 </span><br><span class="line">                 title = [[title substringToIndex:title.length - 2] mutableCopy];</span><br><span class="line">                 [title appendString:@&quot;迁移失败，需要重新登录&quot;];</span><br><span class="line">             &#125;</span><br><span class="line">             </span><br><span class="line">             UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];</span><br><span class="line">             [alertController addAction:[UIAlertAction actionWithTitle:@&quot;确定&quot; style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) &#123;</span><br><span class="line">                 @strongify(self);</span><br><span class="line">                 for (FMAccount *account in failAccounts) &#123;</span><br><span class="line">                     FMMigrationFailAccount *failAccount = [FMMigrationFailAccount convertAccountToMigrationFailAccount:account];</span><br><span class="line">                     [failAccount save];</span><br><span class="line">                     </span><br><span class="line">                     [[FMManager shareInstance] deleteAccount:account.accountId];</span><br><span class="line">                 &#125;</span><br><span class="line">                 [self jumpToOriginalLogic];</span><br><span class="line">             &#125;]];</span><br><span class="line">             </span><br><span class="line">             UIViewController *viewController = [UIApplication sharedApplication].keyWindow.rootViewController;</span><br><span class="line">             [viewController presentViewController:alertController animated:YES completion:^&#123;</span><br><span class="line">             &#125;];</span><br><span class="line">         &#125;</span><br><span class="line">     &#125; error:^(NSError *error) &#123;</span><br><span class="line">         </span><br><span class="line">     &#125; completed:^&#123;</span><br><span class="line">         </span><br><span class="line">     &#125;];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    //11</span><br><span class="line">    static const CGFloat tickCount = 60 / 0.5;</span><br><span class="line">    RACSignal *timer = [[RACSignal interval:0.5 onScheduler:[RACScheduler mainThreadScheduler]]</span><br><span class="line">                        map:^id(id value) &#123;</span><br><span class="line">                            return nil;</span><br><span class="line">                        &#125;];</span><br><span class="line">    </span><br><span class="line">    NSMutableArray *numbers = [[NSMutableArray alloc] init];</span><br><span class="line">    for (NSInteger i = 0; i &lt; tickCount; i++) &#123;</span><br><span class="line">        [numbers addObject:@(i)];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    RACSignal *counter = [[[[[numbers.rac_sequence signal]</span><br><span class="line">                             zipWith:timer]</span><br><span class="line">                            map:^id(RACTuple *tuple) &#123;</span><br><span class="line">                                NSNumber *n = tuple.first;</span><br><span class="line">                                return RACTuplePack(n, @(tickCount), nil);//12</span><br><span class="line">                            &#125;]</span><br><span class="line">                           takeUntil:businessLogicSignal]</span><br><span class="line">                          logCompleted];</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    //6</span><br><span class="line">    NSMutableArray *sequence = [[NSMutableArray alloc] init];</span><br><span class="line">    for (int i = 0; i &lt; accounts.count; i++) &#123;</span><br><span class="line">        [sequence addObject:@(i + 1)];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    static NSInteger progressValue = 0;</span><br><span class="line">    </span><br><span class="line">    [[[[[[[fetchAllInitialData</span><br><span class="line">           flatten]//6</span><br><span class="line">          map:^id(RACTuple *tuple) &#123;</span><br><span class="line">              //7</span><br><span class="line">              return tuple.first;</span><br><span class="line">          &#125;]</span><br><span class="line">         zipWith:[sequence.rac_sequence signal]]//8</span><br><span class="line">        combineLatestWith:[RACSignal return:@(accounts.count)]]//8</span><br><span class="line">       map:^id(RACTuple *tuple) &#123;</span><br><span class="line">           //9</span><br><span class="line">           RACTuple *nestedTuple = tuple.first;</span><br><span class="line">           NSNumber *accountsCount = tuple.second;</span><br><span class="line">           </span><br><span class="line">           FMAccount *account = nestedTuple.first;</span><br><span class="line">           NSNumber *order = nestedTuple.second;</span><br><span class="line">           </span><br><span class="line">           //10</span><br><span class="line">           return RACTuplePack(order, accountsCount, account);</span><br><span class="line">       &#125;]</span><br><span class="line">      merge:counter]//11</span><br><span class="line">     subscribeNext:^(RACTuple *tuple) &#123;</span><br><span class="line">         NSNumber *order = tuple.first;</span><br><span class="line">         NSNumber *accountsCount = tuple.second;</span><br><span class="line">         FMAccount *account = tuple.third;</span><br><span class="line">         </span><br><span class="line">         //13</span><br><span class="line">         if (account) &#123;</span><br><span class="line">             NSLog(@&quot;fetch initial data finished, order is: [%@, %@], account is: %@&quot;, order, accountsCount, account.profile.mailAddress);</span><br><span class="line">             </span><br><span class="line">             NSInteger nextValue = order.integerValue * 100 / accountsCount.integerValue;</span><br><span class="line">             if (order.integerValue == accountsCount.integerValue) &#123;</span><br><span class="line">                 nextValue = 100;</span><br><span class="line">                 progressValue = 100;</span><br><span class="line">             &#125;</span><br><span class="line">             </span><br><span class="line">             if (nextValue &gt; progressValue) &#123;</span><br><span class="line">                 progressValue = nextValue;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125; else &#123;</span><br><span class="line">             NSLog(@&quot;counter info, [%@, %@]&quot;, order, accountsCount);</span><br><span class="line">             progressValue = progressValue + 1.0;</span><br><span class="line">             </span><br><span class="line">             //14</span><br><span class="line">             if (progressValue &gt; 95) &#123;</span><br><span class="line">                 progressValue = 95.0;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">         </span><br><span class="line">         //14</span><br><span class="line">         NSLog(@&quot;======== progressValue is: %ld&quot;, (long)progressValue);</span><br><span class="line">         </span><br><span class="line">     &#125; error:^(NSError *error) &#123;</span><br><span class="line">     &#125; completed:^&#123;</span><br><span class="line">     &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面看看这个 pipeline 是如何组装出来的：</p>
+<ol>
+<li>需求越复杂，通常 pipeline 也就会越复杂，现在我们遇到了新的需求，但是之前那个 pipeline 做的业务仍然是需要保留的，这种时候，通常可以考虑先把 pipeline 的代码拆分一下，然后对拆出来的 signal 或者 pipeline 重新进行组装。首先就可以把 [QHOldAccountMigration fetchInitialDataForAccount:account] 动作拆分出来，注意一点，这里还没有调用 collect 操作。</li>
+<li>因为后续多个业务逻辑都要用到前面第一步得到的 signal，根据业务的需求，对于每个 FMAccount 只需要下载一次数据，所以这里应该让 signal 变成广播的形式。</li>
+<li>内层嵌套的 signal 才是真正的 fetchInitialDataForAccount 动作，同理，也需要变成广播(其实在刚开始设计 pipeline 的时候，可能还意识不到需要广播，这种时候，可以先组装业务流程，当遇到问题后，再考虑是否需要使用广播 signal)。如果暂时看不明白为什么 2 和 3 两处需要使用广播，没有关系，先接着往后看，把整个 pipeline 看明白后，再倒回来想想为什么需要广播。</li>
+<li>这个中间环节也拆分出来，以备后用。</li>
+<li>这里是对 successAccounts 和 failAccounts 的处理逻辑，和前一个版本的 pipeline 没有区别。</li>
+<li>现在开始考虑如何显示进度信息，虽然每次 [QHOldAccountMigration fetchInitialDataForAccount:account] 调用是没有进度信息的，但是当有多次调用的时候，是可以计算出一种形式的进度信息的，比如总共有 5 个 FMAccount，当第一个 FMAccount 下载完数据(或者失败)的时候，整体进度就是 1/5，当第二个 FMAccount 下载完数据(或者失败)的时候，整体进度就是 2/5，依次类推。</li>
+<li>回忆一下 fetchAllInitialData 里面的内容，因为现在是计算进度信息，并不关心具体的 error，所以这里的 map 操作只需要返回 tuple.first，也就是只需要继续传递 FMAccount。</li>
+<li>这里连续调用 zip 和 combineLatest，如果觉得这里很难理解，没有关系，先分别回忆一下 zip 和 combineLatest 的效果，想象一下这里应该得到什么样的结果。</li>
+<li>前面的 zip 操作会得到一个 tuple，然后这个 tuple 又和 [RACSignal return:@(accounts.count)] 进行一次 combineLatest，所以这里会得到一个嵌套的 tuple。</li>
+<li>8 和 9 的操作，最终就是为了组装出这样的一个 tuple，然后继续在 pipeline 中传递。比如总共有 5 个 FMAccount，当第一个 FMAccount 下载完数据(或者失败)的时候，这个 tuple 的值是 (1, 5, 第一个 FMAccount 对象的指针)，当第二个 FMAccount 下载完数据(或者失败)的时候，返回的 tuple 的值是 (2, 5, 第二个 FMAccount 对象的指针)，依次类推，后续还会返回 3 个 tuple。</li>
+<li>前面已经组装出进度信息了，但是对于 UI 来说，这种进度信息还是太粗糙了，为了让 UI 上的进度条能够更平滑的进行动画过渡，还应该插入一些更细粒度的进度信息。这里借助 RAC 的定时器来构造出一种和 10 里面的 tuple 具有相同格式的 tuple 数据。关于这部分定时器的 pipeline，和 <a href="http://fengjian0106.github.io/2016/04/17/The-Power-Of-Composition-In-FRP-Part-1/#发送验证码的倒计时按钮">发送验证码的倒计时按钮</a> 里面的 pipeline 是相似的形状的，可以看看之前的介绍。</li>
+<li>为了和 10 里面返回的 tuple 具有同样的格式，这里需要这样组装数据，按照顺序，这里返回的 tuple 依次将会是 (1, 120, nil)、(2, 120, nil)、(3, 120, nil)，依次类推，直到 (120, 120, nil)。</li>
+<li>终于到了 pipeline 的最终输出了，把 tuple 里面的数据先分别取出来，如果 account 不为 nil，则是通过 fetchAllInitialData 计算出来的进度信息，如果 account 为 nil，则对应通过定时器模拟出来的进度信息。假设最终的进度值会达到 100，这里还需要采用适当的手段将两种不同的进度值融合在一起，现在就是用最简单的办法进行的处理。</li>
+<li>如果定时器返回的 tuple 已经达到 (120, 120, nil)，而 fetchAllInitialData 还没有执行结束，这种情况下，不应该让进度值达到 100，必须得等所有的 fetchAllInitialData 都结束后进度值才能是 100，所以这里做一个约束，定时器模拟出的进度值，最大只能达到 95。</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/05/03/The-Power-Of-Composition-In-FRP-Part-4/" itemprop="url">
                   用 ReactiveCocoa 事半功倍的写代码（四）
                 </a>
@@ -1555,122 +1686,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2014/09/26/An-iOS-Keyboard-Extension-Performance-Optimize/" itemprop="url">
-                  iOS输入法性能优化
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2014-09-26T10:25:52+08:00" content="2014-09-26">
-              2014-09-26
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2014/09/26/An-iOS-Keyboard-Extension-Performance-Optimize/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/09/26/An-iOS-Keyboard-Extension-Performance-Optimize/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>一年前指导同事开发了一款andriod版的输入法(非中文)，其中的词库引擎，是我做的技术选型并且在iOS平台上做了原型验证，采用的是 <code>Ternary Search Tree</code>。一年后，也就是最近，随着iOS8的发布，我们也要发布一款iOS版的输入法。</p>
-<h3 id="遇到的主要问题"><a href="#遇到的主要问题" class="headerlink" title="遇到的主要问题"></a>遇到的主要问题</h3><ol>
-<li><code>Ternary Search Tree</code> 实现 <code>prefix match</code> 的速度很快，但是因为只是一个纯粹的内存数据结构，所以输入法词库的容量是一个瓶颈。在android平台上，考虑多方面因素后，我们的词库中只有3万左右的单词量。iOS平台上做原型验证的时候，词库容量也只能做到10万左右。但是实际的业务需求中，是希望词库容量可以进一步增大的。</li>
-<li>iOS版本输入法的开发过程中，遇到了另外一个问题，就是键盘页面的加载速度和切换速度有点慢，用户能够感觉出来。</li>
-</ol>
-<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><h4 id="词库容量"><a href="#词库容量" class="headerlink" title="词库容量"></a>词库容量</h4><p>词库容量扩充这个问题，其实一直是一个难题，在 <code>Ternary Search Tree</code> 上也做过一些优化，但是变化并不明显。反而是在做server端开发，学习 <code>LevelDB</code> 的时候，碰巧发现 <code>LevelDB</code> 是一个很好的替代。首先 <code>LevelDB</code> 支持 <code>prefix search</code>，而且搜索速度也很快，测试数据表明完全满足我们的业务需求，其次 <code>LevelDB</code> 是将数据存储在文件系统上的，没有了内存大小的限制，词库的容量很轻松就可以扩充100倍以上，而且有了这种近乎无限的词库容量后，之前有一些需要复杂算法甚至很难实现的业务需求，现在也可以在超大词库的基础上，用<strong>“简单但是粗暴”</strong>的算法实现出来。</p>
-<p>iOS平台上的 <code>Core Data</code> 是一套相当好用的数据持久化存储框架，唯一<em><code>可能存在</code></em>的问题就是性能，因此有些开发者在某些场景中，还是愿意去选择使用 <code>SQLite</code> 。有了这次的开发经验后，相信在某些应用场景中， <code>LevelDB</code> 也将会是一个很好的替代方案，比如 Square 开源的 <a href="https://github.com/viewfinderco/viewfinder.git" target="_blank" rel="external">Viewfinder</a> 中的客户端，就是用  <code>LevelDB</code> 实现的数据存储。<code>LevelDB</code> 的核心是 <code>LSM-Tree</code>，其实 <a href="http://sqlite.org/src4/doc/trunk/www/lsmusr.wiki" target="_blank" rel="external">SQLite4</a> 的核心，也是 <code>LSM-Tree</code>，小伙伴们，你们知道吗 :-)</p>
-<h4 id="页面加载和切换速度"><a href="#页面加载和切换速度" class="headerlink" title="页面加载和切换速度"></a>页面加载和切换速度</h4><p>说实话，页面加载速度这个问题，挺出乎意料的，以前我们团队也做了这么多iOS应用了，从来没有在页面速度上遇到过问题，用 <code>Instruments</code>、 <code>NSLog</code> 对比分析了一遍，测量出来的页面加载时间，也和其他应用中页面加载消耗的时间差不多。大家讨论了一下为什么用户会觉得慢，得出的结论是，输入法本来就是一个效率型的工具app，用户心理的期待之一，就是键盘的速度要快，而普通类型的app，用户对速度不会这么敏感。</p>
-<p>问题已经出来了，还是得想办法去优化，吭哧吭哧写代码调试，从3个方面压缩了页面加载切换时消耗的时间：</p>
-<ol>
-<li>键盘的view，是分了好几个层次的，当作为container的UIView加载完成后，就立刻让键盘先显示出来，然后再触发加载真正的keyboard view，这样给用户的一个心理感觉就是键盘弹出的速度很快。</li>
-<li>键盘切换的时候，不再每次都重新从xib中加载对应的view，而是将view缓存在cache里面，用空间换时间。</li>
-<li>移除了keyboard view中每个key view上的 <code>Auto Layout</code> 约束条件，直接在 <code>layoutSubviews</code> 方法中设置subview的 <code>frame</code>，关于这个优化思路，可以看看 <a href="http://pilky.me/36/" target="_blank" rel="external">Optimising Autolayout</a>。需要强调的是，我们并不是否定 <code>Auto Layout</code> ，实际上我们团队现在采用的思路是 <code>Auto Layout</code> 和 <code>Manual Frame Layout</code> 一起使用，代码布局和xib布局一起使用，根据页面的需求做出更合适的选择。</li>
-<li>2014-10-16更新，借助Facebook出品的神器<a href="https://github.com/facebook/AsyncDisplayKit.git，又抠了一些性能出来" target="_blank" rel="external">https://github.com/facebook/AsyncDisplayKit.git，又抠了一些性能出来</a>:]</li>
-</ol>
-<p>这款输入法app，我们还全面切换到使用 <code>ReactiveCocoa</code> 这个框架进行开发，当时也怀疑过是不是因为这个框架造成了性能的损失，从 <code>Instruments</code> 的测量数据来看，我们的顾虑是多余的， <code>ReactiveCocoa</code> 虽然使得整个函数调用栈的层次增加了不少，但是，这不是性能瓶颈。</p>
-
-          
-        
-      
-    </div>
-    
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1716,7 +1731,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-count">12</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
