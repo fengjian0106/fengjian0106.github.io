@@ -82,25 +82,18 @@
 
 
 
-<meta name="description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。
-
-基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html
-基于Levenshtein自动机的，主要线索是 http://blog.">
+<meta name="description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。  基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html 基于Levenshtein自动机的，主要线索是 http://blog.">
+<meta name="keywords" content="iOS,keyborad,kNN">
 <meta property="og:type" content="article">
 <meta property="og:title" content="如何实现Minuum和Fleksy输入法中的智能纠错功能">
 <meta property="og:url" content="http://fengjian0106.github.io/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/index.html">
-<meta property="og:site_name" content="FengJian's Blog">
-<meta property="og:description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。
-
-基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html
-基于Levenshtein自动机的，主要线索是 http://blog.">
+<meta property="og:site_name" content="FengJian&#39;s Blog">
+<meta property="og:description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。  基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html 基于Levenshtein自动机的，主要线索是 http://blog.">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2016-04-10T11:44:12.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="如何实现Minuum和Fleksy输入法中的智能纠错功能">
-<meta name="twitter:description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。
-
-基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html
-基于Levenshtein自动机的，主要线索是 http://blog.">
+<meta name="twitter:description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。  基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html 基于Levenshtein自动机的，主要线索是 http://blog.">
 
 
 
@@ -300,14 +293,14 @@
       
 
       
-        <p>输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 <a href="http://minuum.com/" target="_blank" rel="external">Minuum</a> 和 <a href="http://fleksy.com/" target="_blank" rel="external">Fleksy</a> 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。</p>
+        <p>输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 <a href="http://minuum.com/" target="_blank" rel="noopener">Minuum</a> 和 <a href="http://fleksy.com/" target="_blank" rel="noopener">Fleksy</a> 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。</p>
 <ol>
-<li>基于贝叶斯推断的，主要线索是 <a href="http://norvig.com/spell-correct.html" target="_blank" rel="external">http://norvig.com/spell-correct.html</a></li>
-<li>基于Levenshtein自动机的，主要线索是 <a href="http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata" target="_blank" rel="external">http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata</a></li>
-<li>一种基于预处理词库的改进算法，主要线索是 <a href="http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/" target="_blank" rel="external">http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/</a></li>
-<li>使用机器学习中的kNN算法，主要线索是 <a href="http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/" target="_blank" rel="external">http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/</a> 和 <a href="http://www.zhihu.com/question/27567987" target="_blank" rel="external">http://www.zhihu.com/question/27567987</a></li>
+<li>基于贝叶斯推断的，主要线索是 <a href="http://norvig.com/spell-correct.html" target="_blank" rel="noopener">http://norvig.com/spell-correct.html</a></li>
+<li>基于Levenshtein自动机的，主要线索是 <a href="http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata" target="_blank" rel="noopener">http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata</a></li>
+<li>一种基于预处理词库的改进算法，主要线索是 <a href="http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/" target="_blank" rel="noopener">http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/</a></li>
+<li>使用机器学习中的kNN算法，主要线索是 <a href="http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/" target="_blank" rel="noopener">http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/</a> 和 <a href="http://www.zhihu.com/question/27567987" target="_blank" rel="noopener">http://www.zhihu.com/question/27567987</a></li>
 </ol>
-<p>前三个方案，都是用传统的算法思路，基于<a href="http://en.wikipedia.org/wiki/Levenshtein_distance" target="_blank" rel="external">编辑距离</a>来实现模糊匹配，但是在手机上无法满足输入法的性能需求，尤其是查询速度这一点，而且也无法做到和Minuum或Fleksy类似的纠错效果。最终的第4个方案，则是彻底更换了思路，直接用机器学习中的 <a href="http://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm" target="_blank" rel="external">kNN</a> 算法，把字符串映射到更抽象的几何空间中，也就是所谓的特征向量，进行纯粹的数学计算。学习和研究的过程中，是直接用Python做的代码原型验证，放到github上了，有兴趣的朋友可以看看 <a href="https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching" target="_blank" rel="external">https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching</a></p>
+<p>前三个方案，都是用传统的算法思路，基于<a href="http://en.wikipedia.org/wiki/Levenshtein_distance" target="_blank" rel="noopener">编辑距离</a>来实现模糊匹配，但是在手机上无法满足输入法的性能需求，尤其是查询速度这一点，而且也无法做到和Minuum或Fleksy类似的纠错效果。最终的第4个方案，则是彻底更换了思路，直接用机器学习中的 <a href="http://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm" target="_blank" rel="noopener">kNN</a> 算法，把字符串映射到更抽象的几何空间中，也就是所谓的特征向量，进行纯粹的数学计算。学习和研究的过程中，是直接用Python做的代码原型验证，放到github上了，有兴趣的朋友可以看看 <a href="https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching" target="_blank" rel="noopener">https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching</a></p>
 
       
     </div>
@@ -423,7 +416,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">13</span>
+              <span class="site-state-item-count">14</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

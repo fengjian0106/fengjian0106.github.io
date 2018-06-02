@@ -82,38 +82,19 @@
 
 
 
-<meta name="description" content="监听系统截屏操作的复杂管道这是一个很复杂的 Pipeline，因为要做的业务比较繁琐，如下图：
-
-需求大致可以描述为：
-
-当 app 停留在读信页面的时候，要实时的监听用户是否有截屏操作。
-在 1 的基础上，只有 app 前台运行的时候，才实时监听用户是否有截屏操作，如果是后台状态，则不监听。
-如果用户有截图动作，则将截图内容显示在一个预览视图内(如上图中红框区域)。
-如果用户点击了预览视图，则进">
+<meta name="description" content="监听系统截屏操作的复杂管道这是一个很复杂的 Pipeline，因为要做的业务比较繁琐，如下图：  需求大致可以描述为：  当 app 停留在读信页面的时候，要实时的监听用户是否有截屏操作。 在 1 的基础上，只有 app 前台运行的时候，才实时监听用户是否有截屏操作，如果是后台状态，则不监听。 如果用户有截图动作，则将截图内容显示在一个预览视图内(如上图中红框区域)。 如果用户点击了预览视图，则进">
+<meta name="keywords" content="FRP,ReactiveCocoa">
 <meta property="og:type" content="article">
 <meta property="og:title" content="用 ReactiveCocoa 事半功倍的写代码（四）">
 <meta property="og:url" content="http://fengjian0106.github.io/2016/05/03/The-Power-Of-Composition-In-FRP-Part-4/index.html">
-<meta property="og:site_name" content="FengJian's Blog">
-<meta property="og:description" content="监听系统截屏操作的复杂管道这是一个很复杂的 Pipeline，因为要做的业务比较繁琐，如下图：
-
-需求大致可以描述为：
-
-当 app 停留在读信页面的时候，要实时的监听用户是否有截屏操作。
-在 1 的基础上，只有 app 前台运行的时候，才实时监听用户是否有截屏操作，如果是后台状态，则不监听。
-如果用户有截图动作，则将截图内容显示在一个预览视图内(如上图中红框区域)。
-如果用户点击了预览视图，则进">
+<meta property="og:site_name" content="FengJian&#39;s Blog">
+<meta property="og:description" content="监听系统截屏操作的复杂管道这是一个很复杂的 Pipeline，因为要做的业务比较繁琐，如下图：  需求大致可以描述为：  当 app 停留在读信页面的时候，要实时的监听用户是否有截屏操作。 在 1 的基础上，只有 app 前台运行的时候，才实时监听用户是否有截屏操作，如果是后台状态，则不监听。 如果用户有截图动作，则将截图内容显示在一个预览视图内(如上图中红框区域)。 如果用户点击了预览视图，则进">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://fengjian0106.github.io/images/monitor_screenshot.png">
 <meta property="og:updated_time" content="2016-05-04T08:06:26.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="用 ReactiveCocoa 事半功倍的写代码（四）">
-<meta name="twitter:description" content="监听系统截屏操作的复杂管道这是一个很复杂的 Pipeline，因为要做的业务比较繁琐，如下图：
-
-需求大致可以描述为：
-
-当 app 停留在读信页面的时候，要实时的监听用户是否有截屏操作。
-在 1 的基础上，只有 app 前台运行的时候，才实时监听用户是否有截屏操作，如果是后台状态，则不监听。
-如果用户有截图动作，则将截图内容显示在一个预览视图内(如上图中红框区域)。
-如果用户点击了预览视图，则进">
+<meta name="twitter:description" content="监听系统截屏操作的复杂管道这是一个很复杂的 Pipeline，因为要做的业务比较繁琐，如下图：  需求大致可以描述为：  当 app 停留在读信页面的时候，要实时的监听用户是否有截屏操作。 在 1 的基础上，只有 app 前台运行的时候，才实时监听用户是否有截屏操作，如果是后台状态，则不监听。 如果用户有截图动作，则将截图内容显示在一个预览视图内(如上图中红框区域)。 如果用户点击了预览视图，则进">
 <meta name="twitter:image" content="http://fengjian0106.github.io/images/monitor_screenshot.png">
 
 
@@ -343,7 +324,7 @@
 <li>用 merge 操作组装出最终用来隐藏预览 view 的 signal。</li>
 <li>把这个 ViewController 的 viewWillDisappear 转换成 signal 的形式。根据需求，只有这个 ViewController 可见的时候，才监听截图事件，所以，在 viewDidAppear 的时候构造 Pipeline，在 viewWillDisappear 的时候释放 Pipeline。</li>
 <li>这里是隐藏预览 view 的具体逻辑。</li>
-<li>当点击了预览 view 的时候，通过 showDrawViewController 方法进入后续的业务逻辑，这里使用了 <a href="http://rxmarbles.com/#sample" target="_blank" rel="external">sample</a> 操作。</li>
+<li>当点击了预览 view 的时候，通过 showDrawViewController 方法进入后续的业务逻辑，这里使用了 <a href="http://rxmarbles.com/#sample" target="_blank" rel="noopener">sample</a> 操作。</li>
 </ol>
 
       
@@ -458,7 +439,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">13</span>
+              <span class="site-state-item-count">14</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
