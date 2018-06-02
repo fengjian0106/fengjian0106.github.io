@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="iOS,keyborad,kNN," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="FengJian's Blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。  基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html 基于Levenshtein自动机的，主要线索是 http://blog.">
+<meta name="keywords" content="iOS,keyborad,kNN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何实现Minuum和Fleksy输入法中的智能纠错功能">
+<meta property="og:url" content="http://fengjian0106.github.io/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/index.html">
+<meta property="og:site_name" content="FengJian&#39;s Blog">
+<meta property="og:description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。  基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html 基于Levenshtein自动机的，主要线索是 http://blog.">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2016-04-10T11:44:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何实现Minuum和Fleksy输入法中的智能纠错功能">
+<meta name="twitter:description" content="输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 Minuum 和 Fleksy 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。  基于贝叶斯推断的，主要线索是 http://norvig.com/spell-correct.html 基于Levenshtein自动机的，主要线索是 http://blog.">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://fengjian0106.github.io/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/"/>
+
+
+
+
+
+  <title>如何实现Minuum和Fleksy输入法中的智能纠错功能 | FengJian's Blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?eeb1f7ee5ca721cee0bcad8df6a28d5e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">FengJian's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">iOS Golang node.js Developer</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengjian0106.github.io/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="FengJian">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="FengJian's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">如何实现Minuum和Fleksy输入法中的智能纠错功能</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-02-11T10:56:30+08:00">
+                2015-02-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>输入法的产品一直在持续技术演进，最近的一项工作，是实现了一个类似 <a href="http://minuum.com/" target="_blank" rel="noopener">Minuum</a> 和 <a href="http://fleksy.com/" target="_blank" rel="noopener">Fleksy</a> 这两款输入法中的模糊输入功能的单词智能纠错引擎，前后尝试过4种不同的算法思路，最终才找到适合手机的解决方案，特此记录一下。</p>
+<ol>
+<li>基于贝叶斯推断的，主要线索是 <a href="http://norvig.com/spell-correct.html" target="_blank" rel="noopener">http://norvig.com/spell-correct.html</a></li>
+<li>基于Levenshtein自动机的，主要线索是 <a href="http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata" target="_blank" rel="noopener">http://blog.notdot.net/2010/07/Damn-Cool-Algorithms-Levenshtein-Automata</a></li>
+<li>一种基于预处理词库的改进算法，主要线索是 <a href="http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/" target="_blank" rel="noopener">http://blog.faroo.com/2012/06/07/improved-edit-distance-based-spelling-correction/</a></li>
+<li>使用机器学习中的kNN算法，主要线索是 <a href="http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/" target="_blank" rel="noopener">http://minuum.com/model-your-users-algorithms-behind-the-minuum-keyboard/</a> 和 <a href="http://www.zhihu.com/question/27567987" target="_blank" rel="noopener">http://www.zhihu.com/question/27567987</a></li>
+</ol>
+<p>前三个方案，都是用传统的算法思路，基于<a href="http://en.wikipedia.org/wiki/Levenshtein_distance" target="_blank" rel="noopener">编辑距离</a>来实现模糊匹配，但是在手机上无法满足输入法的性能需求，尤其是查询速度这一点，而且也无法做到和Minuum或Fleksy类似的纠错效果。最终的第4个方案，则是彻底更换了思路，直接用机器学习中的 <a href="http://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm" target="_blank" rel="noopener">kNN</a> 算法，把字符串映射到更抽象的几何空间中，也就是所谓的特征向量，进行纯粹的数学计算。学习和研究的过程中，是直接用Python做的代码原型验证，放到github上了，有兴趣的朋友可以看看 <a href="https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching" target="_blank" rel="noopener">https://github.com/fengjian0106/Minuum-Fleksy-Fuzzy-Matching</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+            <a href="/tags/keyborad/" rel="tag"># keyborad</a>
+          
+            <a href="/tags/kNN/" rel="tag"># kNN</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/12/09/Ultrasonic-Communication/" rel="next" title="手机超声波通信">
+                <i class="fa fa-chevron-left"></i> 手机超声波通信
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/04/10/CSP-Concurrency-Patterns-In-Swift/" rel="prev" title="通过 Swift 学习 CSP 并发模型">
+                通过 Swift 学习 CSP 并发模型 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div class="ds-thread" data-thread-key="2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/"
+           data-title="如何实现Minuum和Fleksy输入法中的智能纠错功能" data-url="http://fengjian0106.github.io/2015/02/11/Minuum-And-Fleksy-Input-Method-Fuzzy-Matching/">
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="FengJian" />
+            
+              <p class="site-author-name" itemprop="name">FengJian</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">FengJian</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"fengjian0106"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
